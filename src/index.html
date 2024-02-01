@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Economica:wght@400;700&display=swap">
+
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="root">
+    <!-- rootをかませるのが推奨 -->
+  </div>
+  
+  <script type="module" src="./bundle.js" defer></script>
+  <!-- memo:
+
+  HTMLパーサーが当該scriptタグに到達後jsが読み込みが開始される。
+  type="module"の指定で、複数ファイルを読み込み・実行する場合、
+  ファイル間にimport,exportのやりとりがあれば、実行順序も保証されるようになる。
+  一方、そのような依存関係がない場合には、実行は非同期で行われ、順番は保証されない。
+  deferを指定すると、jsの実行は保留、html末尾までパースされた後、
+  js依存関係の有無にかかわらず、実行順を保証して実行される。
+  asyncを指定すると、HTMLパーサーが到達後とにかく順番などはガン無視で
+  非同期に読み込み・実行までが行われる。
+  よって例えば、読み込むjsファイルが1つだけであることが確定している場合などにはasyncが良く、
+  type="module"の指定も理論上不要。
+  ただし、将来の拡張性を加味すれば、基本的には、type="module"とdeferを指定しておくのが一番無難。
+
+  chat gpt
+修正が不要な理解です。簡潔で理解しやすいまとめですね。
+要点：
+1. type="module":
+・複数ファイルを読み込む場合、モジュール間に依存関係があれば実行順序が保証される。
+・依存関係がない場合は非同期に読み込まれ、順序は保証されない。
+2. defer:
+・HTMLパーサーが到達後、jsの実行は保留。文書解析が完了した後に実行され、実行順序が保証される。
+・依存関係の有無にかかわらず、実行順序が保証される。
+3. async:
+・HTMLパーサーが到達後、非同期に読み込まれ、実行される。実行順序が保証されない。
+・単一のJSファイルで確定している場合や順序が問題でない場合に適している。
+4. 選択の基準:
+単一のJSファイルで確定している場合は、asyncが速いが将来の拡張性を考慮するならtype="module"とdeferが無難。
+複数のファイルやモジュールの依存関係がある場合は、type="module"とdeferを組み合わせて使用することが一般的。
+
+わかりやすく図解されているネット画像
+  https://camo.qiitausercontent.com/7b051bc5b7ea9deb74d311a6763190d60e10000f/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f34313239372f65666330383632312d613565632d643336622d353961372d3366396138356435346635612e706e67
+
+
+
+
+  [jsにおける短絡評価のまとめ]
+  <三項演算子>
+  ・構文
+    const value = 条件式または真偽値 ? 条件式または真偽値がtrueの場合に返す"値" : 条件式がfalseの場合に返す"値";
+
+  ・if文による書き換え
+    let temp;
+    if (条件式) {
+      temp = 条件式がtrueの場合に返す"値";
+    } else {
+      temp = 条件式がfalseの場合に返す"値";
+    }
+    const value = temp;
+
+  <論理演算子を用いた短絡評価>
+  ・一般に"短絡評価"といえばこちらをさすことが多い。
+
+  ・構文
+    条件式または真偽値A 論理演算子 B;
+    ※ Aは真偽性のテストが可能なものだけが受け入れ可能。
+       Bは何でもよい。任意の値も返り値の無い処理も可。
+
+    (当たり前だが、以下のように、返り値を定数や変数で受けてもよい。
+    const variable = 条件式または真偽値A 論理演算子 B;)
+
+
+    - 解説
+      この構文ではまず前提として、Aの真偽の評価が行われる。
+
+      パターン1: Aの評価だけで全体の真偽が確定しない場合
+      Aは実質的に無視され、Bの値を返す、またはBを実行する。
+      具体的には、
+      論理演算子が&&ならば、    Aがtrueの場合に真偽が確定せず、 Bまで読まれる。
+      論理演算子が||, ??ならば、Aがfalseの場合に真偽が確定せず、Bまで読まれる。
+      (なお、Bが返り値の無い処理だった場合、処理が実行され全体としてはundefinedが返る。)
+
+      パターン2: Aの評価だけで()内全体の真偽が確定する場合
+      Bは無視され、Aを返す。
+      具体的には、
+      論理演算子が&&ならば、Aがfalseの時点で全体の真偽がfalseに確定し、falseが返る。
+      論理演算子が||, ??ならば、Aがtrueの時点で全体の真偽がtrueに確定し、tureが返る。
+
+    - 補足: Null合体演算子(Nullish Coalescing Operator)について
+      "??"であらわされる「Null合体演算子」は基本的に"||"と同じく論理和を表す。
+      両者で異なるのは、"false判定の厳しさ" (裏を返せばtrue判定の寛容さ)。
+      通常の論理和演算子では次のfalsyな値すべてがfalse判定になる。
+        null, undefined, '', 0, NaN, false
+      Null合体演算子では、次のNullishな値のみがfalse判定になる。
+        null, undefined
+
+  ・if文による書き換え
+  
+    ・A && B; の場合
+    if (A) {
+      B;
+    } else {
+      A;
+    }
+    ・A || B; の場合
+    if (A) {
+      A;
+    } else {
+      B;
+    }
+    ・A ?? B; の場合
+    if (A !== null && A !== undefined) {
+      A;
+    } else {
+      B;
+    }
+
+    特にtypescriptでは、
+    xがnull型でなければ、xを使って、function(x)の処理をするということが多い。
+    これはif文では、
+    if (x) {
+      function(x);
+      /* 他の処理 */
+    }
+    短絡評価では、
+    x && (
+      function(x);
+      /* 他の処理 */
+    );
+    と書ける。これはあまりうまみを感じられない。
+
+    短絡評価が真に必要とされるのはreact x typescriptの環境。
+    reactのjsx記法の中ではif文が使えない。
+    そこで短絡評価を使って以下のように書かれることがある。
+
+    const HogeComponent: FC<id: number> = (props) => {
+      return (
+        <>
+          /* 他のjsx */
+          {props.id && (
+            <p children={props.id} />
+            /* 他のjsx */
+          )}
+          /* 他のjsx */
+        </>
+      );
+    }
+
+    Optional chaining
+    const city = person.address && person.address.city;
+    const city = person?.address?.city;
+
+
+    const getCompedValue = (elm: HTMLElement, prop: string, unit: string='px'): number => {
+  return Number(getComputedStyle(elm).getPropertyValue(prop).replace(unit, ''));
+}
+
+  -->
+</body>
+
+</html>
