@@ -9,8 +9,11 @@ import { getBtnStyle } from './styleMain';
 /* components */
 import Form from './Form';
 import Todo from './Todo';
+import TabSettingModal from './TabSettingModal'
 
 import {StyledForm, StyledLegend, StyledInputsWrapper, StyledInputWrapper, StyledLabel, StyledInput, StyledSmall, StyledAddBtn} from './Form';
+
+
 
 // TodoTypes は global に定義
 interface TodoTypes { id: number; detail?: string; title: string; isCompleted: boolean; }
@@ -33,17 +36,7 @@ const Main = () => {
   console.log(storageDataTabTitle);
   const [categories, setCategories] = useState<CategoryTypes[]>(storageDataTabTitle);
 
-
-
-  useEffect(() => {
-    const storageData = localStorage.getItem(storageDataTabTitle[activeIndex].title);
-    let savedTodos;
-    if (storageData === null) { savedTodos = []                      }
-    else                      { savedTodos = JSON.parse(storageData) }
-    setTodos(savedTodos);
-    console.log(activeIndex, savedTodos);
-  }, [activeIndex]);
-
+  const updateCategories = (newCategories: CategoryTypes[]) => { setCategories(newCategories); };
 
 
 
@@ -109,15 +102,18 @@ const Main = () => {
   };
   // ------------------------------------------------------------------------- //
 
-
-
-  // 作業中--------------------------------------------------------------------------
-
-  const Tab = () => {
+  // --- TabUl Component  ---------------------------------------------------- //
+  const TabUl = () => {
 
     const handleTabClick = (i: number) => (e: MouseEvent) => {
-      console.log(`Clicked tab index: ${i}`);
       setActiveIndex(i);
+
+      // index に基づいて local storage から todos を取得して state を更新
+      const storageData = localStorage.getItem(storageDataTabTitle[i].title);
+      let savedTodos;
+      if (storageData === null) { savedTodos = []                      }
+      else                      { savedTodos = JSON.parse(storageData) }
+      setTodos(savedTodos);
     };
 
     const tabNames = categories.map(category => {return category.title});
@@ -134,10 +130,10 @@ const Main = () => {
 
     return ( <StyledTabUl children={ TabItems } /> );
   };
+  // ------------------------------------------------------------------------- //
 
-
-
-  // Todo Component (li elm) の配列を生成
+  // --- TodoList Component  ------------------------------------------------- //
+  // Todo Component (li elm) からなる配列を生成
   const TodoListItems = todos.map((todo) => {
     return (
       <Todo
@@ -150,44 +146,16 @@ const Main = () => {
     );
   });
 
-  const TodosList = () => {
-    return ( <StyledUl id="todos" children={ TodoListItems } /> );
-  };
+  const TodosList = () => { return <StyledUl id="todos" children={ TodoListItems } /> };
+  // ------------------------------------------------------------------------- //
 
 
-
+  // --- 作業中 : modal の開閉動作制御部分 --------------------------------------------------------------------------
   const [tabEditIsOpen, setTabEditIsOpen] = useState(false);
-  const [newTabTitle, setNewTabTitle] = useState('');
-  // const inputRef = useRef<HTMLInputElement>(null);
-
-
   const handleGearIconClick = () => {
     setTabEditIsOpen(true);
-    
   };
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTabTitle(e.currentTarget.value);
-  }
-
-  const executeAdd = () => {
-    // フォームをクリア
-    setNewTabTitle('');
-
-    // 新しい newTabTitle を key として、todos を格納するための空の配列を新規登録登録
-    const TODO_L_STRAGE_KEY = newTabTitle;
-    localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify([]));
-
-    // categories を新しいtabtitleを含めたものに更新
-    const newCategory = {id: categories.length, title: newTabTitle}
-    const newCategories = [...categories, newCategory];
-    setCategories(newCategories);
-
-    // local storage の tab_titles を更新
-    const TAB_TITLES_L_STRAGE_KEY = 'tab_titles';
-    localStorage.setItem(TAB_TITLES_L_STRAGE_KEY, JSON.stringify(newCategories));
-  };
-  // 作業中--------------------------------------------------------------------------
+  // --- 作業中 : modal の開閉動作制御部分 --------------------------------------------------------------------------
 
 
   // Main DOM を return
@@ -204,7 +172,7 @@ const Main = () => {
       </StyledH2>
 
       <StyledTabNav>
-        <Tab />
+        <TabUl />
         <Separater/>
         <StyledGearIcon onClick={handleGearIconClick} children={<FontAwesomeIcon icon={faGear} />}/>
       </StyledTabNav>
@@ -214,52 +182,14 @@ const Main = () => {
         key = {10}
         onAddSubmit = { handleAddFormSubmit }
       />
-
-      <div>
-        <StyledForm onSubmit={(e) => { e.preventDefault() }}>
-          <StyledLegend id="test">CREATE NEW LIST</StyledLegend>
-          <StyledInputsWrapper>
-            <StyledInputWrapper to="test" smooth={true}>
-              <StyledLabel $optional={false} htmlFor="new-tab-title">
-                <span>{/* 必須 */}</span>Category Name:
-              </StyledLabel>
-              <StyledInput
-                id="new-tab-title"
-                type="text"
-                required
-                placeholder="例: 買い物用"
-                value={newTabTitle}
-                onChange={handleTitleChange}
-                // ref={inputRef}
-              />
-              {/* <StyledSmall
-                $showNotion={showNotion ? true : false}
-                children="※ タイトルは必須です。" /> */}
-            </StyledInputWrapper>
-
-          </StyledInputsWrapper>
-          <StyledAddBtn
-            onClick={executeAdd}
-            type="button"
-            id="add-btn"
-          >
-            <div>
-              <div>
-                <FontAwesomeIcon icon={faPlus} />
-              </div>
-              <p>Add</p>
-            </div>
-          </StyledAddBtn>
-        </StyledForm> <legend>
-          CREATE NEW LIST
-        </legend>
-
-      </div>
+      <TabSettingModal categories={categories} updateCategories={updateCategories}/>
 
     </StyledMain>
   );
 }
 // ============================================= △ Main Component (main elm) △ === //
+
+
 
 // === ▽ style ▽ ================================================================= //
 // main elm
