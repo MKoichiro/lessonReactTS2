@@ -14,28 +14,29 @@ import {StyledForm, StyledLegend, StyledInputsWrapper, StyledInputWrapper, Style
 
 // TodoTypes は global に定義
 interface TodoTypes { id: number; detail?: string; title: string; isCompleted: boolean; }
-interface CategoryTypes { id: number; name: string; }
+interface CategoryTypes { id: number; title: string; }
 
 // === ▽ Main Component (main elm) ▽ ============================================= //
 const Main = () => {
 
   const [todos, setTodos] = useState<TodoTypes[]>([]);
-  // const [categories, setCategories] = useState<CategoryTypes[]>([{id: 0, name: "todos"}, {id: 1, name: "Category-2"}, {id: 2, name: "Category-3Category-3"}, {id: 3, name: "Category-4"}, {id: 4, name: "Category-5"}, {id: 5, name: "Category-6"}, {id: 6, name: "Category-7"}, {id: 7, name: "Category-8"}, {id: 8, name: "Category-9"}, {id: 9, name: "Category-10"}]);
-  const [categories, setCategories] = useState<CategoryTypes[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
 
-  let savedCategories: {id: number; name: string}[];
-  useEffect(() => {
-    const storageData = [...Object.keys(localStorage)];
-    savedCategories = storageData.map((key, i) => {
-      return { id: i, name: key };
-    });
-    console.log(storageData, savedCategories);
-    setCategories(savedCategories);
-  }, []);
+  const storageDataTabTitleString: string | null = localStorage.getItem('tab_titles');
+  let storageDataTabTitle: CategoryTypes[];
+  if (storageDataTabTitleString) {
+    storageDataTabTitle = JSON.parse(storageDataTabTitleString);
+  } else {
+    storageDataTabTitle = [];
+    console.error("local storage に 'tab_titles' のデータがありません。");
+  }
+  console.log(storageDataTabTitle);
+  const [categories, setCategories] = useState<CategoryTypes[]>(storageDataTabTitle);
+
+
 
   useEffect(() => {
-    const storageData = localStorage.getItem(savedCategories[activeIndex].name);
+    const storageData = localStorage.getItem(storageDataTabTitle[activeIndex].title);
     let savedTodos;
     if (storageData === null) { savedTodos = []                      }
     else                      { savedTodos = JSON.parse(storageData) }
@@ -48,7 +49,7 @@ const Main = () => {
 
   const updateTodos = (newTodos: TodoTypes[]) => {
     setTodos(newTodos);
-    const TODO_L_STRAGE_KEY = categories[activeIndex].name;
+    const TODO_L_STRAGE_KEY = categories[activeIndex].title;
     localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify(newTodos));
   }
 
@@ -119,7 +120,7 @@ const Main = () => {
       setActiveIndex(i);
     };
 
-    const tabNames = categories.map(category => {return category.name});
+    const tabNames = categories.map(category => {return category.title});
     const TabItems = tabNames.map((tabName, i) => {
       return (
         <StyledButton
@@ -170,15 +171,21 @@ const Main = () => {
   }
 
   const executeAdd = () => {
+    // フォームをクリア
     setNewTabTitle('');
-    const newCategory = {id: categories.length, name: newTabTitle}
 
-    const newCategories = [...categories, newCategory];
-
+    // 新しい newTabTitle を key として、todos を格納するための空の配列を新規登録登録
     const TODO_L_STRAGE_KEY = newTabTitle;
-    setCategories(newCategories);
     localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify([]));
 
+    // categories を新しいtabtitleを含めたものに更新
+    const newCategory = {id: categories.length, title: newTabTitle}
+    const newCategories = [...categories, newCategory];
+    setCategories(newCategories);
+
+    // local storage の tab_titles を更新
+    const TAB_TITLES_L_STRAGE_KEY = 'tab_titles';
+    localStorage.setItem(TAB_TITLES_L_STRAGE_KEY, JSON.stringify(newCategories));
   };
   // 作業中--------------------------------------------------------------------------
 
