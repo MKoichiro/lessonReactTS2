@@ -1,8 +1,8 @@
 /* react */
-import React, { useState, useEffect, useRef, MouseEvent } from 'react';
+import React, { useState, MouseEvent } from 'react';
 /* font awesome */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowsRotate, faGear, faPlus  } from '@fortawesome/free-solid-svg-icons';
+import { faArrowsRotate, faGear } from '@fortawesome/free-solid-svg-icons';
 /* styled-components */
 import styled from 'styled-components';
 import { getBtnStyle } from './styleMain';
@@ -10,9 +10,6 @@ import { getBtnStyle } from './styleMain';
 import Form from './Form';
 import Todo from './Todo';
 import TabSettingModal from './TabSettingModal'
-
-import {StyledForm, StyledLegend, StyledInputsWrapper, StyledInputWrapper, StyledLabel, StyledInput, StyledSmall, StyledAddBtn} from './Form';
-
 
 
 // TodoTypes は global に定義

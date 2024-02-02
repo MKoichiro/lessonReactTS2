@@ -5,24 +5,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus  } from '@fortawesome/free-solid-svg-icons';
 /* styled-components */
 import styled from 'styled-components';
-import { getBtnStyle } from './styleMain';
+import { Link } from 'react-scroll';
 
-import {StyledForm, StyledLegend, StyledInputsWrapper, StyledInputWrapper, StyledLabel, StyledInput, StyledSmall, StyledAddBtn} from './Form';
+/* from 関連の共通スタイルを定義してあるスタイル関数を import */
+import {getFormStyle, getLegendStyle, getInputsWrapperStyle, getInputWrapperStyle, getLabelStyle, getInputStyle, getSmallStyle, getAddBtnStyle} from './commonStyleForm';
 
 
-// === ▽ Main Component (main elm) ▽ ============================================= //
+// === ▽ TabSettingModal Component  ▽ ============================================= //
 interface CategoryTypes { id: number; title: string; }
 interface modal {categories: CategoryTypes[]; updateCategories: (newCategories: CategoryTypes[]) => void;}
 
 const TabSettingModal: FC<modal> = (props) => {
 
-  // const [tabEditIsOpen, setTabEditIsOpen] = useState(false);
   const [newTabTitle, setNewTabTitle] = useState('');
-
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewTabTitle(e.currentTarget.value);
   }
-
 
   const executeAdd = () => {
     // フォームをクリア
@@ -41,6 +39,7 @@ const TabSettingModal: FC<modal> = (props) => {
     const TAB_TITLES_L_STRAGE_KEY = 'tab_titles';
     localStorage.setItem(TAB_TITLES_L_STRAGE_KEY, JSON.stringify(newCategories));
   };
+
   const TabList = () => {
 
     const tabNames = props.categories.map(category => {return category.title});
@@ -58,50 +57,60 @@ const TabSettingModal: FC<modal> = (props) => {
 
   return (
     <div>
-    <TabList />
 
-    <StyledForm onSubmit={(e) => { e.preventDefault() }}>
-      <StyledLegend id="test">CREATE NEW LIST</StyledLegend>
-      <StyledInputsWrapper>
-        <StyledInputWrapper to="test" smooth={true}>
-          <StyledLabel $optional={false} htmlFor="new-tab-title">
-            <span>{/* 必須 */}</span>Category Name:
-          </StyledLabel>
-          <StyledInput
-            id="new-tab-title"
-            type="text"
-            required
-            placeholder="例: 買い物用"
-            value={newTabTitle}
-            onChange={handleTitleChange}
-          />
-          {/* <StyledSmall
-            $showNotion={showNotion ? true : false}
-            children="※ タイトルは必須です。" /> */}
-        </StyledInputWrapper>
+      <h2> Tab Setting </h2>
+      <TabList />
 
-      </StyledInputsWrapper>
-      <StyledAddBtn
-        onClick={executeAdd}
-        type="button"
-        id="add-btn"
-      >
-        <div>
+      <StyledForm onSubmit={(e) => { e.preventDefault() }}>
+        <StyledLegend id="test">CREATE NEW LIST</StyledLegend>
+        <StyledInputsWrapper>
+          <StyledInputWrapper to="test" smooth={true}>
+            <StyledLabel $optional={false} htmlFor="new-tab-title">
+              <span>{/* 必須 */}</span>Category Name:
+            </StyledLabel>
+            <StyledInput
+              id="new-tab-title"
+              type="text"
+              required
+              placeholder="例: 買い物用"
+              value={newTabTitle}
+              onChange={handleTitleChange}
+            />
+            {/* <StyledSmall
+              $showNotion={showNotion ? true : false}
+              children="※ タイトルは必須です。" /> */}
+          </StyledInputWrapper>
+
+        </StyledInputsWrapper>
+        <StyledAddBtn
+          onClick={executeAdd}
+          type="button"
+          id="add-btn"
+        >
           <div>
-            <FontAwesomeIcon icon={faPlus} />
+            <div>
+              <FontAwesomeIcon icon={faPlus} />
+            </div>
+            <p>Add</p>
           </div>
-          <p>Add</p>
-        </div>
-      </StyledAddBtn>
-    </StyledForm>
+        </StyledAddBtn>
+      </StyledForm>
 
-  </div>
+    </div>
   );
 };
 
-// ============================================= △ Main Component (main elm) △ === //
+// ============================================= △ TabSettingModal Component △ === //
 
 // === ▽ style ▽ ================================================================= //
+const StyledForm          = styled.form` ${ getFormStyle } `;
+const StyledLegend        = styled.legend` ${ getLegendStyle } `;
+const StyledInputsWrapper = styled.div` ${ getInputsWrapperStyle } `;
+const StyledInputWrapper  = styled(Link)` ${ getInputWrapperStyle } `;
+const StyledLabel         = styled.label<{$optional?: boolean}>` ${ getLabelStyle } `;
+const StyledInput         = styled.input<{$as?: React.ElementType}>` ${ getInputStyle } `;
+const StyledAddBtn        = styled.button<{id?: string}>` ${ getAddBtnStyle } `;
+
 const StyledTabUl = styled.ul`
   font-size: 2rem;
   display: flex;
@@ -114,6 +123,5 @@ const StyledTabUl = styled.ul`
   }
 `;
 // ================================================================= △ style △ === //
-
 
 export default TabSettingModal;

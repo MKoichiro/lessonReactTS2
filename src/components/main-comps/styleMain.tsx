@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import { css } from 'styled-components';
 
 // button 共通のスタイル関数
 const getBtnStyle = (props: {id?: string;}) => css`
