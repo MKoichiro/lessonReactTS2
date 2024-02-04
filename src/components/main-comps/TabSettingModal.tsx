@@ -2,14 +2,21 @@
 import React, { FC, useState } from 'react';
 /* font awesome */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus  } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisVertical, faTrashCan, faAngleUp, faAnglesUp, faAngleDown, faAnglesDown } from '@fortawesome/free-solid-svg-icons';
 /* styled-components */
 import styled from 'styled-components';
 import { Link } from 'react-scroll';
 
 /* from 関連の共通スタイルを定義してあるスタイル関数を import */
-import {getFormStyle, getLegendStyle, getInputsWrapperStyle, getInputWrapperStyle, getLabelStyle, getInputStyle, getSmallStyle, getAddBtnStyle} from './commonStyleForm';
+import * as FormStyles from './commonStyleForm';
+import { getBtnStyle } from './styleMain';
 
+const FaEllipsisVertical = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faEllipsisVertical   } className = { props.className } /> };
+const FaTrashCan         = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faTrashCan           } className = { props.className } /> };
+const FaAngleUp          = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAngleUp            } className = { props.className } /> };
+const FaAnglesUp         = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAnglesUp           } className = { props.className } /> };
+const FaAngleDown        = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAngleDown          } className = { props.className } /> };
+const FaAnglesDown       = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAnglesDown         } className = { props.className } /> };
 
 // === ▽ TabSettingModal Component  ▽ ============================================= //
 interface CategoryTypes { id: number; title: string; }
@@ -18,10 +25,16 @@ interface modal {categories: CategoryTypes[]; updateCategories: (newCategories: 
 const TabSettingModal: FC<modal> = (props) => {
 
   const [newTabTitle, setNewTabTitle] = useState('');
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewTabTitle(e.currentTarget.value);
-  }
 
+  // ToTopBtnのクリックでそのcategoryを1番上に移動 (※テスト段階)
+  // const handleToTopBtnClick = () => {
+  //   console.log('test');
+  // }
+
+  // フォームの入力に合わせて newTabTitle を更新
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => { setNewTabTitle(e.currentTarget.value); }
+
+  // category の追加
   const executeAdd = () => {
     // フォームをクリア
     setNewTabTitle('');
@@ -41,24 +54,36 @@ const TabSettingModal: FC<modal> = (props) => {
   };
 
   const TabList = () => {
-
-    const tabNames = props.categories.map(category => {return category.title});
+    const tabNames = props.categories.map(category => {
+      return category.title
+    });
     const TabItems = tabNames.map((tabName, i) => {
       return (
-        <li
-          key={i}
-          children={tabName}
-        />
+        <StyledLi key={i}>
+          <TabTitleContainer>
+            <GripBtn/>
+            <p children={ tabName }/>
+            <DeleteBtn/>
+          </TabTitleContainer>
+          <SortBtnsContainer>
+            <ToTopBtn/>
+            <ToBottomBtn/>
+            <UpBtn/>
+            <DownBtn/>
+          </SortBtnsContainer>
+        </StyledLi>
       );
     });
-
     return ( <StyledTabUl children={ TabItems } /> );
   };
 
   return (
-    <div>
+    <>
+      <Mask/>
 
-      <h2> Tab Setting </h2>
+      <StyledDiv>
+
+      <StyledH2> Tab Setting </StyledH2>
       <TabList />
 
       <StyledForm onSubmit={(e) => { e.preventDefault() }}>
@@ -96,32 +121,128 @@ const TabSettingModal: FC<modal> = (props) => {
         </StyledAddBtn>
       </StyledForm>
 
-    </div>
+      </StyledDiv>
+    </>
+
   );
 };
 
 // ============================================= △ TabSettingModal Component △ === //
 
 // === ▽ style ▽ ================================================================= //
-const StyledForm          = styled.form` ${ getFormStyle } `;
-const StyledLegend        = styled.legend` ${ getLegendStyle } `;
-const StyledInputsWrapper = styled.div` ${ getInputsWrapperStyle } `;
-const StyledInputWrapper  = styled(Link)` ${ getInputWrapperStyle } `;
-const StyledLabel         = styled.label<{$optional?: boolean}>` ${ getLabelStyle } `;
-const StyledInput         = styled.input<{$as?: React.ElementType}>` ${ getInputStyle } `;
-const StyledAddBtn        = styled.button<{id?: string}>` ${ getAddBtnStyle } `;
+const Mask = styled.div`
+  /* position: fixed;
+  inset: 0;  */
+  backdrop-filter: blur(4px);
+  display: none;
+`;
+const StyledDiv = styled.div`
+  /* position: fixed;
+  top: 6.4rem; z-index: 3; */
+  background: pink;
+  display: flex;
+  flex-direction: column;
+  gap: 3.2rem;
+`;
+
+const StyledH2 = styled.h2`
+  /* color: red; */
+`;
 
 const StyledTabUl = styled.ul`
-  font-size: 2rem;
-  display: flex;
-  flex: 1;
-  overflow-x: scroll;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar  {
-    display: none;
+  font-size: 1.6rem;
+`;
+const StyledLi = styled.li`
+  /* outline: .2rem solid #000; */
+  &:nth-child(even) { background: #e0e0e0 }
+
+  & + li { margin-top: 1.6rem; }
+  line-height: 3.2rem;
+  p {
+    height: 3.2rem;
+    font-size: 1.8rem;
+    font-weight: bold;
   }
 `;
+
+const TabTitleContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const GripBtn = styled(FaEllipsisVertical)`
+  ${ getBtnStyle }
+  height: 1.6rem;
+  padding: .8rem .4rem;
+  cursor: pointer;
+`
+
+const DeleteBtn = styled(FaTrashCan)`
+  ${ getBtnStyle }
+  margin-left: auto;
+  /* background: red; */
+
+  height: 1.6rem;
+  padding: .8rem .4rem;
+  cursor: pointer;
+`;
+
+const SortBtnsContainer = styled.div`
+  display: flex;
+  height: 4rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3.2rem;
+`;
+
+const ToTopBtn = styled(FaAnglesUp)`
+  ${ getBtnStyle }
+  height: 1.6rem;
+  padding: .8rem .4rem;
+  cursor: pointer;
+`;
+const ToBottomBtn = styled(FaAnglesDown)`
+  ${ getBtnStyle }
+  height: 1.6rem;
+  padding: .8rem .4rem;
+  cursor: pointer;
+`;
+const UpBtn = styled(FaAngleUp)`
+  ${ getBtnStyle }
+  height: 1.6rem;
+  padding: .8rem .4rem;
+  cursor: pointer;
+`;
+const DownBtn = styled(FaAngleDown)`
+  ${ getBtnStyle }
+  height: 1.6rem;
+  padding: .8rem .4rem;
+  cursor: pointer;
+`;
+
+const StyledForm = styled.form`
+  ${ FormStyles.getFormStyle }
+`;
+const StyledLegend = styled.legend`
+  ${ FormStyles.getLegendStyle }
+`;
+const StyledInputsWrapper = styled.div`
+  ${ FormStyles.getInputsWrapperStyle }
+`;
+const StyledInputWrapper = styled(Link)`
+  ${ FormStyles.getInputWrapperStyle }
+`;
+const StyledLabel = styled.label<{$optional?: boolean}>`
+  ${ FormStyles.getLabelStyle }
+`;
+const StyledInput = styled.input<{$as?: React.ElementType}>`
+  ${ FormStyles.getInputStyle }
+`;
+const StyledAddBtn = styled.button<{id?: string}>`
+  ${ FormStyles.getAddBtnStyle }
+`;
+
+
 // ================================================================= △ style △ === //
 
 export default TabSettingModal;

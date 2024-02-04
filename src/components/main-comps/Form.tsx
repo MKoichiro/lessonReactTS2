@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 /* from 関連の共通スタイルを定義してあるスタイル関数を import */
-import {getFormStyle, getLegendStyle, getInputsWrapperStyle, getInputWrapperStyle, getLabelStyle, getInputStyle, getSmallStyle, getAddBtnStyle} from './commonStyleForm';
+import * as FormStyles from './commonStyleForm';
 
 
 // === ▽ Form Component (form elm) ▽ ============================================= //
@@ -104,19 +104,33 @@ const Form: FC<FormProps> = (props) => {
 
 // === ▽ style ▽ ================================================================= //
 const StyledForm = styled.form`
-  ${ getFormStyle }
+  ${ FormStyles.getFormStyle }
   margin: 3.2rem 0;
   padding: 3.2rem .8rem 0;
   border-top: .15rem dashed #3e3e3e;
 `;
 
-const StyledLegend        = styled.legend` ${ getLegendStyle } `;
-const StyledInputsWrapper = styled.div` ${ getInputsWrapperStyle } `;
-const StyledInputWrapper  = styled(Link)` ${ getInputWrapperStyle } `;
-const StyledLabel         = styled.label<{$optional?: boolean}>` ${ getLabelStyle } `;
-const StyledInput         = styled.input<{$as?: React.ElementType}>` ${ getInputStyle } `;
-const StyledAddBtn        = styled.button<{id?: string}>` ${ getAddBtnStyle } `;
-const StyledSmall         = styled.small<{$showNotion: boolean}>` ${ getSmallStyle } `;
+const StyledLegend = styled.legend`
+  ${ FormStyles.getLegendStyle }
+`;
+const StyledInputsWrapper = styled.div`
+  ${ FormStyles.getInputsWrapperStyle }
+`;
+const StyledInputWrapper = styled(Link)`
+  ${ FormStyles.getInputWrapperStyle }
+`;
+const StyledLabel = styled.label<{$optional?: boolean}>`
+  ${ FormStyles.getLabelStyle }
+`;
+const StyledInput = styled.input<{$as?: React.ElementType}>`
+  ${ FormStyles.getInputStyle }
+`;
+const StyledAddBtn = styled.button<{id?: string}>`
+  ${ FormStyles.getAddBtnStyle }
+`;
+const StyledSmall = styled.small<{$showNotion: boolean}>`
+  ${ FormStyles.getSmallStyle }
+`;
 // ================================================================= △ style △ === //
 
 export default Form;
