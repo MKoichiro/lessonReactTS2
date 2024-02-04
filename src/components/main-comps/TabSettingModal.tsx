@@ -11,12 +11,7 @@ import { Link } from 'react-scroll';
 import * as FormStyles from './commonStyleForm';
 import { getBtnStyle } from './styleMain';
 
-const FaEllipsisVertical = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faEllipsisVertical   } className = { props.className } /> };
-const FaTrashCan         = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faTrashCan           } className = { props.className } /> };
-const FaAngleUp          = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAngleUp            } className = { props.className } /> };
-const FaAnglesUp         = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAnglesUp           } className = { props.className } /> };
-const FaAngleDown        = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAngleDown          } className = { props.className } /> };
-const FaAnglesDown       = (props: { id?: string; className?: string; }) => { return <FontAwesomeIcon icon = { faAnglesDown         } className = { props.className } /> };
+
 
 // === ▽ TabSettingModal Component  ▽ ============================================= //
 interface CategoryTypes { id: number; title: string; }
@@ -26,10 +21,24 @@ const TabSettingModal: FC<modal> = (props) => {
 
   const [newTabTitle, setNewTabTitle] = useState('');
 
-  // ToTopBtnのクリックでそのcategoryを1番上に移動 (※テスト段階)
-  // const handleToTopBtnClick = () => {
-  //   console.log('test');
-  // }
+  // sort関連ボタンのハンドラ
+  const handleDeleteBtnClick = () => {
+    console.log('DELETE btn clicked');
+    console.log(props.categories)
+  };
+  // ToTopBtn: 1番上に移動
+  const handleToTopBtnClick = () => {
+    console.log('TO TOP btn clicked');
+  };
+  const handleToBottomBtnClick = () => {
+    console.log('TO BOTTOM btn clicked');
+  };
+  const handleUpBtnClick = () => {
+    console.log('UP btn clicked');
+  };
+  const handleDownBtnClick = () => {
+    console.log('DOWN btn clicked')
+  };
 
   // フォームの入力に合わせて newTabTitle を更新
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => { setNewTabTitle(e.currentTarget.value); }
@@ -61,21 +70,33 @@ const TabSettingModal: FC<modal> = (props) => {
       return (
         <StyledLi key={i}>
           <TabTitleContainer>
-            <GripBtn/>
+            <GripBtn
+              icon = { faEllipsisVertical } />
             <p children={ tabName }/>
-            <DeleteBtn/>
+            <DeleteBtn
+              icon    = {faTrashCan}
+              onClick = { handleDeleteBtnClick } />
           </TabTitleContainer>
           <SortBtnsContainer>
-            <ToTopBtn/>
-            <ToBottomBtn/>
-            <UpBtn/>
-            <DownBtn/>
+            <ToTopBtn
+              icon    = { faAnglesUp }
+              onClick = { handleToTopBtnClick } />
+            <ToBottomBtn
+              icon    = { faAnglesDown }
+              onClick = { handleToBottomBtnClick }/>
+            <UpBtn
+              icon    = { faAngleUp }
+              onClick = { handleUpBtnClick } />
+            <DownBtn
+              icon    = { faAngleDown }
+              onClick = { handleDownBtnClick } />
           </SortBtnsContainer>
         </StyledLi>
       );
     });
-    return ( <StyledTabUl children={ TabItems } /> );
+    return ( <StyledTabUl children = { TabItems } /> );
   };
+
 
   return (
     <>
@@ -130,6 +151,7 @@ const TabSettingModal: FC<modal> = (props) => {
 // ============================================= △ TabSettingModal Component △ === //
 
 // === ▽ style ▽ ================================================================= //
+
 const Mask = styled.div`
   /* position: fixed;
   inset: 0;  */
@@ -170,14 +192,14 @@ const TabTitleContainer = styled.div`
   align-items: center;
 `;
 
-const GripBtn = styled(FaEllipsisVertical)`
+const GripBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   height: 1.6rem;
   padding: .8rem .4rem;
   cursor: pointer;
 `
 
-const DeleteBtn = styled(FaTrashCan)`
+const DeleteBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   margin-left: auto;
   /* background: red; */
@@ -195,25 +217,26 @@ const SortBtnsContainer = styled.div`
   gap: 3.2rem;
 `;
 
-const ToTopBtn = styled(FaAnglesUp)`
+
+const ToTopBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   height: 1.6rem;
   padding: .8rem .4rem;
   cursor: pointer;
 `;
-const ToBottomBtn = styled(FaAnglesDown)`
+const ToBottomBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   height: 1.6rem;
   padding: .8rem .4rem;
   cursor: pointer;
 `;
-const UpBtn = styled(FaAngleUp)`
+const UpBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   height: 1.6rem;
   padding: .8rem .4rem;
   cursor: pointer;
 `;
-const DownBtn = styled(FaAngleDown)`
+const DownBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   height: 1.6rem;
   padding: .8rem .4rem;
