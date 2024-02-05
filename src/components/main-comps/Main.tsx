@@ -1,5 +1,5 @@
 /* react */
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEvent, useEffect } from 'react';
 /* font awesome */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsRotate, faGear } from '@fortawesome/free-solid-svg-icons';
@@ -30,18 +30,33 @@ const Main = () => {
     storageDataTabTitle = [];
     console.error("local storage に 'tab_titles' のデータがありません。");
   }
-  console.log(storageDataTabTitle);
   const [categories, setCategories] = useState<CategoryTypes[]>(storageDataTabTitle);
 
-  const updateCategories = (newCategories: CategoryTypes[]) => { setCategories(newCategories); };
-
-
+  const updateCategories = (newCategories: CategoryTypes[]) => {
+    setCategories(newCategories);
+    // ここを変更
+    const CATEGORIES_L_STRAGE_KEY = 'tab_titles';
+    localStorage.setItem(CATEGORIES_L_STRAGE_KEY, JSON.stringify(newCategories));
+  };
 
   const updateTodos = (newTodos: TodoTypes[]) => {
     setTodos(newTodos);
     const TODO_L_STRAGE_KEY = categories[activeIndex].title;
     localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify(newTodos));
-  }
+  };
+
+  // index に基づいて local storage から todos を取得して state を更新する関数
+  const callSavedTodos = (index: number) => {
+    const storageData = localStorage.getItem(storageDataTabTitle[index].title);
+    let savedTodos;
+    if (storageData === null) { savedTodos = []                      }
+    else                      { savedTodos = JSON.parse(storageData) }
+    setTodos(savedTodos);
+  };
+
+  // 今のところ activeIndex の初期値は 0 としているので、
+  // 初回は0番目の category の todos を呼び出し。
+  useEffect(() => { callSavedTodos(activeIndex) }, []);
 
   // --- Todo Component に渡すハンドラ --------------------------------------- //
   // 1. delete button: click
@@ -104,13 +119,8 @@ const Main = () => {
 
     const handleTabClick = (i: number) => (e: MouseEvent) => {
       setActiveIndex(i);
-
-      // index に基づいて local storage から todos を取得して state を更新
-      const storageData = localStorage.getItem(storageDataTabTitle[i].title);
-      let savedTodos;
-      if (storageData === null) { savedTodos = []                      }
-      else                      { savedTodos = JSON.parse(storageData) }
-      setTodos(savedTodos);
+      // category の indexで todos 呼び出し、todos state を更新
+      callSavedTodos(i);
     };
 
     const tabNames = categories.map(category => {return category.title});
