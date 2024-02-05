@@ -11,8 +11,6 @@ import { Link } from 'react-scroll';
 import * as FormStyles from './commonStyleForm';
 import { getBtnStyle } from './styleMain';
 
-
-
 // === ▽ TabSettingModal Component  ▽ ============================================= //
 interface CategoryTypes { id: number; title: string; }
 interface modal {categories: CategoryTypes[]; updateCategories: (newCategories: CategoryTypes[]) => void;}
@@ -22,22 +20,36 @@ const TabSettingModal: FC<modal> = (props) => {
   const [newTabTitle, setNewTabTitle] = useState('');
 
   // sort関連ボタンのハンドラ
-  const handleDeleteBtnClick = () => {
-    console.log('DELETE btn clicked');
-    console.log(props.categories)
+  // idを振りなおす共通の処理
+  const renumberCategories = (categories: CategoryTypes[]) => {
+    const renumberedCategories = categories.map((category, i) => {
+      return { ...category, id: i }
+    });
+    return renumberedCategories;
   };
-  // ToTopBtn: 1番上に移動
-  const handleToTopBtnClick = () => {
-    console.log('TO TOP btn clicked');
+  // DeleteBtn: カテゴリーごとtodoリストを削除
+  const handleDeleteBtnClick = (index: number) => {
+    if (!confirm('本当に削除しますか？\n削除すると復元はできません。')) { return }
+    const removedCategories = [...props.categories].filter((_, i) => i !== index);
+    const renumberedCategories = renumberCategories(removedCategories);
+    props.updateCategories(renumberedCategories);
   };
-  const handleToBottomBtnClick = () => {
-    console.log('TO BOTTOM btn clicked');
+  // ToTopBtn / ToBottomBtn: 1番上、または1番下に移動
+  const handleToTopOrBottomBtnClick = (index: number, which: 't' | 'b') => {
+    const rearrangedCategories = [...props.categories];
+    const trimedCategory = rearrangedCategories.splice(index, 1);
+    if      (which === 't') { rearrangedCategories.unshift(...trimedCategory) }
+    else if (which === 'b') { rearrangedCategories.push(...trimedCategory)    }
+    const renumberedCategories = renumberCategories(rearrangedCategories);
+    props.updateCategories(renumberedCategories);
   };
-  const handleUpBtnClick = () => {
-    console.log('UP btn clicked');
-  };
-  const handleDownBtnClick = () => {
-    console.log('DOWN btn clicked')
+  // UpBtn / DownBtn: 1つ上、または1つ下に移動
+  const handleUpOrDownBtnClick = (index: number, which: 'u' | 'd') => {
+    const rearrangedCategories = [...props.categories];
+    if      (which === 'u') { rearrangedCategories.splice(index - 1, 0, ...rearrangedCategories.splice(index, 1)) }
+    else if (which === 'd') { rearrangedCategories.splice(index + 1, 0, ...rearrangedCategories.splice(index, 1)) }
+    const renumberedCategories = renumberCategories(rearrangedCategories);
+    props.updateCategories(renumberedCategories);
   };
 
   // フォームの入力に合わせて newTabTitle を更新
@@ -75,21 +87,21 @@ const TabSettingModal: FC<modal> = (props) => {
             <p children={ tabName }/>
             <DeleteBtn
               icon    = {faTrashCan}
-              onClick = { handleDeleteBtnClick } />
+              onClick = { () => handleDeleteBtnClick(i) } />
           </TabTitleContainer>
           <SortBtnsContainer>
             <ToTopBtn
               icon    = { faAnglesUp }
-              onClick = { handleToTopBtnClick } />
+              onClick = { () => handleToTopOrBottomBtnClick(i, 't') } />
             <ToBottomBtn
               icon    = { faAnglesDown }
-              onClick = { handleToBottomBtnClick }/>
+              onClick = { () => handleToTopOrBottomBtnClick(i, 'b') }/>
             <UpBtn
               icon    = { faAngleUp }
-              onClick = { handleUpBtnClick } />
+              onClick = { () => handleUpOrDownBtnClick(i, 'u') } />
             <DownBtn
               icon    = { faAngleDown }
-              onClick = { handleDownBtnClick } />
+              onClick = { () => handleUpOrDownBtnClick(i, 'd') } />
           </SortBtnsContainer>
         </StyledLi>
       );
