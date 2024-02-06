@@ -13,7 +13,12 @@ import { getBtnStyle } from './styleMain';
 
 // === ▽ TabSettingModal Component  ▽ ============================================= //
 interface CategoryTypes { id: number; title: string; }
-interface modal {categories: CategoryTypes[]; updateCategories: (newCategories: CategoryTypes[]) => void;}
+interface modal {
+  isOpen: boolean;
+  closer: () => void;
+  categories: CategoryTypes[];
+  updateCategories: (newCategories: CategoryTypes[]) => void;
+}
 
 const TabSettingModal: FC<modal> = (props) => {
 
@@ -106,77 +111,94 @@ const TabSettingModal: FC<modal> = (props) => {
         </StyledLi>
       );
     });
-    return ( <StyledTabUl children = { TabItems } /> );
+    return (
+      <StyledTabUl>
+          { TabItems }
+      </StyledTabUl>
+    );
   };
 
 
   return (
-    <>
-      <Mask/>
+    <Mask
+      $isOpen={props.isOpen}
+      onClick={props.closer}
+    >
+        <StyledDiv>
 
-      <StyledDiv>
+<StyledH2> Tab Setting </StyledH2>
+<TabList />
 
-      <StyledH2> Tab Setting </StyledH2>
-      <TabList />
+<StyledForm onSubmit={(e) => { e.preventDefault() }}>
+  <StyledLegend
+    id="test"
+    children="CREATE NEW LIST" />
+  <StyledInputsWrapper>
+    <StyledInputWrapper
+      to="test"
+      smooth={true} >
+      <StyledLabel
+        $optional={false}
+        htmlFor="new-tab-title"
+      >
+        <span>{/* 必須 */}</span>Category Name:
+      </StyledLabel>
+      <StyledInput
+        id="new-tab-title"
+        type="text"
+        required
+        placeholder="例: 買い物用"
+        value={newTabTitle}
+        onChange={handleTitleChange}
+      />
+      {/* <StyledSmall
+      $showNotion={showNotion ? true : false}
+      children="※ タイトルは必須です。" /> */}
+    </StyledInputWrapper>
 
-      <StyledForm onSubmit={(e) => { e.preventDefault() }}>
-        <StyledLegend id="test">CREATE NEW LIST</StyledLegend>
-        <StyledInputsWrapper>
-          <StyledInputWrapper to="test" smooth={true}>
-            <StyledLabel $optional={false} htmlFor="new-tab-title">
-              <span>{/* 必須 */}</span>Category Name:
-            </StyledLabel>
-            <StyledInput
-              id="new-tab-title"
-              type="text"
-              required
-              placeholder="例: 買い物用"
-              value={newTabTitle}
-              onChange={handleTitleChange}
-            />
-            {/* <StyledSmall
-              $showNotion={showNotion ? true : false}
-              children="※ タイトルは必須です。" /> */}
-          </StyledInputWrapper>
+  </StyledInputsWrapper>
+  <StyledAddBtn
+    onClick={executeAdd}
+    type="button"
+    id="add-btn"
+  >
+    <div>
+      <div>
+        <FontAwesomeIcon icon={faPlus} />
+      </div>
+      <p>Add</p>
+    </div>
+  </StyledAddBtn>
+</StyledForm>
 
-        </StyledInputsWrapper>
-        <StyledAddBtn
-          onClick={executeAdd}
-          type="button"
-          id="add-btn"
-        >
-          <div>
-            <div>
-              <FontAwesomeIcon icon={faPlus} />
-            </div>
-            <p>Add</p>
-          </div>
-        </StyledAddBtn>
-      </StyledForm>
+</StyledDiv>
 
-      </StyledDiv>
-    </>
 
+    </Mask>
   );
 };
-
 // ============================================= △ TabSettingModal Component △ === //
 
-// === ▽ style ▽ ================================================================= //
 
-const Mask = styled.div`
-  /* position: fixed;
-  inset: 0;  */
+// === ▽ style ▽ ================================================================= //
+const Mask = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  inset: 0; 
   backdrop-filter: blur(4px);
-  display: none;
+  display: ${ props => props.$isOpen ? 'flex': 'none' };
+  justify-content: center;
+  align-items: center;
 `;
 const StyledDiv = styled.div`
-  /* position: fixed;
-  top: 6.4rem; z-index: 3; */
-  background: pink;
+  position: absolute;
+  width: 50%;
+  padding: 1.6rem;
+  background: #e9e9e9;
+  border-radius: .8rem;
   display: flex;
   flex-direction: column;
   gap: 3.2rem;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
 `;
 
 const StyledH2 = styled.h2`
@@ -185,10 +207,26 @@ const StyledH2 = styled.h2`
 
 const StyledTabUl = styled.ul`
   font-size: 1.6rem;
+  max-height: 50vh;
+  overflow-y: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  
+  /* リスト部分にスクロールの余地があることを示す影:
+     スクロール位置が上端の時、上の影を隠す。(下端も同様) */
+  background: linear-gradient(to Bottom, #e9e9e9 30%, transparent),                /* 上の影の隠し */
+              linear-gradient(to Bottom, transparent, #e9e9e9 70%),         /* 下の影の隠し */
+              linear-gradient(to Bottom, rgba(0 0 0 / .15) 10%, transparent),        /* 上の影 */
+              linear-gradient(to Bottom, transparent, rgba(0 0 0 / .15) 90%); /* 下の影 */
+
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-position: 0 0, 0 100%, 0 0, 0 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
 `;
 const StyledLi = styled.li`
-  /* outline: .2rem solid #000; */
-  &:nth-child(even) { background: #e0e0e0 }
+  &:nth-child(even) { background: rgba(0 0 0 / .04) }
 
   & + li { margin-top: 1.6rem; }
   line-height: 3.2rem;
@@ -209,13 +247,11 @@ const GripBtn = styled(FontAwesomeIcon)`
   height: 1.6rem;
   padding: .8rem .4rem;
   cursor: pointer;
-`
+`;
 
 const DeleteBtn = styled(FontAwesomeIcon)`
   ${ getBtnStyle }
   margin-left: auto;
-  /* background: red; */
-
   height: 1.6rem;
   padding: .8rem .4rem;
   cursor: pointer;

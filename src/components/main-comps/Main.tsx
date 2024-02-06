@@ -159,9 +159,8 @@ const Main = () => {
 
   // --- 作業中 : modal の開閉動作制御部分 --------------------------------------------------------------------------
   const [tabEditIsOpen, setTabEditIsOpen] = useState(false);
-  const handleGearIconClick = () => {
-    setTabEditIsOpen(true);
-  };
+  const handleGearIconClick = () => { setTabEditIsOpen(true) };
+  const closeModal = () => { setTabEditIsOpen(false) };
   // --- 作業中 : modal の開閉動作制御部分 --------------------------------------------------------------------------
 
 
@@ -171,9 +170,9 @@ const Main = () => {
 
       <StyledH2>
         ToDo List
-        <StyledBtn onClick={ handlePurgeClick }>
+        <StyledBtn onClick = { handlePurgeClick }>
           <div>
-            <FontAwesomeIcon icon={faArrowsRotate} />
+            <FontAwesomeIcon icon = { faArrowsRotate } />
           </div>
         </StyledBtn>
       </StyledH2>
@@ -181,15 +180,20 @@ const Main = () => {
       <StyledTabNav>
         <TabUl />
         <Separater/>
-        <StyledGearIcon onClick={handleGearIconClick} children={<FontAwesomeIcon icon={faGear} />}/>
+        <StyledGearIcon
+          onClick  = { handleGearIconClick }
+          children = { <FontAwesomeIcon icon = { faGear } /> } />
       </StyledTabNav>
       <TodosList />
 
       <Form 
         key = {10}
-        onAddSubmit = { handleAddFormSubmit }
-      />
-      <TabSettingModal categories={categories} updateCategories={updateCategories}/>
+        onAddSubmit = { handleAddFormSubmit } />
+      <TabSettingModal
+        isOpen           = { tabEditIsOpen }
+        closer           = { closeModal }
+        categories       = { categories }
+        updateCategories = { updateCategories } />
 
     </StyledMain>
   );
