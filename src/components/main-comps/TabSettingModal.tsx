@@ -13,13 +13,16 @@ import * as FormStyles from './commonStyleForm';
 import { getBtnStyle } from './styleMain';
 
 // === ▽ TabSettingModal Component ▽ ============================================== //
+interface TodoTypes { id: number; detail?: string; title: string; isCompleted: boolean; }
 interface CategoryTypes {
   id: number;
   title: string;
 }
 interface modal {
   isOpen: boolean;
-  closer: () => void;
+  modalCloser: () => void;
+  todosInitializer: (storageKey: string) => TodoTypes[];
+  tabSwitcher: (newActiveIndex: number, storageKey: string) => void;
   categories: CategoryTypes[];
   updateCategories: (newCategories: CategoryTypes[]) => void;
 }
@@ -42,10 +45,12 @@ const TabSettingModal: FC<modal> = (props) => {
 
   // Delete Btn(ゴミ箱アイコン):              カテゴリーごとtodoリストを削除
   const handleDeleteBtnClick = (index: number) => {
+    const TODO_L_STRAGE_KEY = props.categories[index].title;
     if (!confirm('本当に削除しますか？\n削除すると復元はできません。')) { return }
     const removedCategories = [...props.categories].filter((_, i) => i !== index);
     const renumberedCategories = renumberCategories(removedCategories);
     props.updateCategories(renumberedCategories);
+    localStorage.removeItem(TODO_L_STRAGE_KEY);
   };
   // To Top Btn("<<") / To Bottom Btn(">>"):  1番上、または1番下に移動
   const handleToTopOrBottomBtnClick = (index: number, which: 't' | 'b') => {
@@ -73,12 +78,15 @@ const TabSettingModal: FC<modal> = (props) => {
 
     // 新しい newTabTitle を key として、todos を格納するための空の配列を新規登録登録
     const TODO_L_STRAGE_KEY = newTabTitle;
-    localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify([]));
+    props.todosInitializer(TODO_L_STRAGE_KEY);
 
-    // categories を新しいtabtitleを含めたものに更新
+    // categories 配列を newTabTitle を含めたものに更新
     const newCategory = {id: props.categories.length, title: newTabTitle}
     const newCategories = [...props.categories, newCategory];
     props.updateCategories(newCategories);
+
+    // 新規作成した category のタブに切り替え
+    props.tabSwitcher(props.categories.length, newTabTitle);
   };
   // ------------------------------------------------- add Btn のハンドラ --- //
 
@@ -94,7 +102,9 @@ const TabSettingModal: FC<modal> = (props) => {
               icon = { faEllipsisVertical } />
           </button>
           <p children = { tabName } />
-          <DeleteBtn onClick = { () => handleDeleteBtnClick(i) } >
+          <DeleteBtn
+            isLastOne = { props.categories.length === 1 }
+            onClick = { () => handleDeleteBtnClick(i) } >
             <StyledFAI icon = { faTrashCan } />
           </DeleteBtn>
         </TabTitleContainer>
@@ -129,13 +139,13 @@ const TabSettingModal: FC<modal> = (props) => {
   return (
     <Mask
       $isOpen = { props.isOpen }
-      onClick = { props.closer }
+      onClick = { props.modalCloser }
     >
 
       <StyledDiv
         onClick = { (e) => { e.stopPropagation() } } >
 
-        <h2 children = "Tab Setting" />
+        <h2 children = "Category Setting" />
         <TabListContainer children = { TabItems } />
 
         <StyledForm onSubmit = { (e) => { e.preventDefault() } }>
@@ -193,6 +203,7 @@ const Mask = styled.div<{ $isOpen: boolean }>`
   display: ${ props => props.$isOpen ? 'flex': 'none' };
   justify-content: center;
   align-items: center;
+  /* cursor: pointer; */
 `;
 
 const StyledDiv = styled.div`
@@ -231,7 +242,7 @@ const StyledLi = styled.li`
   line-height: 3.2rem;
   padding: .8rem 0 1.6rem;
 
-  &:nth-child(even) {
+  &:nth-child(odd) {
     background: rgba(0 0 0 / .04);
     .sort-btns-container {
       /* border-bottom: .15rem solid #990; */
@@ -252,7 +263,10 @@ const TabTitleContainer = styled.div`
 
 const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
-const DeleteBtn = styled.button` margin-left: auto; `;
+const DeleteBtn = styled.button<{ isLastOne: boolean }>`
+  display: ${ props => props.isLastOne ? 'none' : 'block' };
+  margin-left: auto;
+`;
 
 const SortBtnsContainer = styled.div`
   margin-left: auto;
@@ -267,9 +281,16 @@ const SortBtnsContainer = styled.div`
 
 `;
 
-const StyledForm = styled.form` ${ FormStyles.getFormStyle } `;
+const StyledForm = styled.form`
+  ${ FormStyles.getFormStyle }
+  gap: 1.6rem;
+`;
 
-const StyledLegend = styled.legend` ${ FormStyles.getLegendStyle } `;
+const StyledLegend = styled.legend`
+  ${ FormStyles.getLegendStyle }
+  padding-top: 3.2rem;
+  border-top: .15rem dashed #444;
+`;
 
 const StyledInputsWrapper = styled.div` ${ FormStyles.getInputsWrapperStyle } `;
 

@@ -19,44 +19,54 @@ interface CategoryTypes { id: number; title: string; }
 // === ▽ Main Component (main elm) ▽ ============================================= //
 const Main = () => {
 
-  const [todos, setTodos] = useState<TodoTypes[]>([]);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const CATEGORIES_L_STRAGE_KEY = 'tab_titles';
+  const INITAIL_CATEGORY_TITLE = 'Template 1';
 
+  // categories の初期化
   const storageDataTabTitleString: string | null = localStorage.getItem('tab_titles');
   let storageDataTabTitle: CategoryTypes[];
   if (storageDataTabTitleString) {
     storageDataTabTitle = JSON.parse(storageDataTabTitleString);
   } else {
-    storageDataTabTitle = [];
+    storageDataTabTitle = [{id: 0, title: INITAIL_CATEGORY_TITLE}];
+    localStorage.setItem(CATEGORIES_L_STRAGE_KEY, JSON.stringify(storageDataTabTitle));
     console.error("local storage に 'tab_titles' のデータがありません。");
   }
   const [categories, setCategories] = useState<CategoryTypes[]>(storageDataTabTitle);
 
+  // categories の更新関数
   const updateCategories = (newCategories: CategoryTypes[]) => {
     setCategories(newCategories);
-    // ここを変更
-    const CATEGORIES_L_STRAGE_KEY = 'tab_titles';
     localStorage.setItem(CATEGORIES_L_STRAGE_KEY, JSON.stringify(newCategories));
   };
 
+  const initializeTodos = (storageKey: string): TodoTypes[] => {
+    const templateTodos = [
+      {
+        id: Date.now(),
+        title: "下のフォームからタスクを新規作成・追加できます。追加済みのタスクを編集するにはここをダブルクリック。",
+        detail: "編集が完了したら余白をクリックして変更内容を確定。",
+        isCompleted: false,
+      },
+    ];
+    localStorage.setItem(storageKey, JSON.stringify(templateTodos));
+    return templateTodos;
+  };
+
+  // todos の初期化
+  const storageData = localStorage.getItem(storageDataTabTitle[0].title);
+  let initialTodos: TodoTypes[];
+  if (storageData === null) { initialTodos = initializeTodos(INITAIL_CATEGORY_TITLE); }
+  else                      { initialTodos = JSON.parse(storageData);                 }
+  const [todos, setTodos] = useState<TodoTypes[]>(initialTodos);
+
+  // todos の更新関数
   const updateTodos = (newTodos: TodoTypes[]) => {
     setTodos(newTodos);
     const TODO_L_STRAGE_KEY = categories[activeIndex].title;
     localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify(newTodos));
   };
-
-  // index に基づいて local storage から todos を取得して state を更新する関数
-  const callSavedTodos = (index: number) => {
-    const storageData = localStorage.getItem(storageDataTabTitle[index].title);
-    let savedTodos;
-    if (storageData === null) { savedTodos = []                      }
-    else                      { savedTodos = JSON.parse(storageData) }
-    setTodos(savedTodos);
-  };
-
-  // 今のところ activeIndex の初期値は 0 としているので、
-  // 初回は0番目の category の todos を呼び出し。
-  useEffect(() => { callSavedTodos(activeIndex) }, []);
 
   // --- Todo Component に渡すハンドラ --------------------------------------- //
   // 1. delete button: click
@@ -79,7 +89,6 @@ const Main = () => {
   // ------------------------------------------------------------------------- //
 
   const handleTodoEdited = (newTodo: TodoTypes) => {
-
     const newTodos = [...todos];
     // todo.idはDate.now()なので、todo.idが直接indexに一致しない。ので、ここでfindIndexする必要がある。
     const todoIndex = newTodos.findIndex((item) => item.id === newTodo.id);
@@ -115,22 +124,28 @@ const Main = () => {
   // ------------------------------------------------------------------------- //
 
   // --- TabUl Component  ---------------------------------------------------- //
+  // tab 切り替えの処理は tabSettingModal Component でも使用するので関数化
+  const switchTab = (newActiveIndex: number, storageKey: string) => {
+    setActiveIndex(newActiveIndex);
+    const storageData = localStorage.getItem(storageKey);
+    let savedTodos;
+    if (storageData === null) { console.error('local storage に category title と一致するデータが見つかりません。') }
+    else                      { savedTodos = JSON.parse(storageData) }
+    setTodos(savedTodos);
+  };
+
   const TabUl = () => {
 
-    const handleTabClick = (i: number) => (e: MouseEvent) => {
-      setActiveIndex(i);
-      // category の indexで todos 呼び出し、todos state を更新
-      callSavedTodos(i);
-    };
+    const handleTabClick = (i: number) => (e: MouseEvent) => { switchTab(i, storageDataTabTitle[i].title); };
 
     const tabNames = categories.map(category => {return category.title});
     const TabItems = tabNames.map((tabName, i) => {
       return (
         <StyledButton
-          key={i}
-          $isActive={activeIndex === i}
-          onClick={handleTabClick(i)}
-          children={tabName}
+          key       = { i }
+          $isActive = { activeIndex === i }
+          onClick   = { handleTabClick(i) }
+          children  = { tabName }
         />
       );
     });
@@ -141,7 +156,7 @@ const Main = () => {
 
   // --- TodoList Component  ------------------------------------------------- //
   // Todo Component (li elm) からなる配列を生成
-  const TodoListItems = todos.map((todo) => {
+  const todoListItems = todos.map((todo) => {
     return (
       <Todo
         key           = { todo.id }
@@ -153,14 +168,14 @@ const Main = () => {
     );
   });
 
-  const TodosList = () => { return <StyledUl id="todos" children={ TodoListItems } /> };
+  const TodosList = () => { return <StyledUl id="todos" children={ todoListItems } /> };
   // ------------------------------------------------------------------------- //
 
 
   // --- 作業中 : modal の開閉動作制御部分 --------------------------------------------------------------------------
-  const [tabEditIsOpen, setTabEditIsOpen] = useState(false);
-  const handleGearIconClick = () => { setTabEditIsOpen(true) };
-  const closeModal = () => { setTabEditIsOpen(false) };
+  const [tabSettingModalIsOpen, setTabSettingModalIsOpen] = useState(false);
+  const handleGearIconClick = () => { setTabSettingModalIsOpen(true) };
+  const closeModal = () => { setTabSettingModalIsOpen(false) };
   // --- 作業中 : modal の開閉動作制御部分 --------------------------------------------------------------------------
 
 
@@ -188,8 +203,10 @@ const Main = () => {
         key = {10}
         onAddSubmit = { handleAddFormSubmit } />
       <TabSettingModal
-        isOpen           = { tabEditIsOpen }
-        closer           = { closeModal }
+        isOpen           = { tabSettingModalIsOpen }
+        modalCloser      = { closeModal }
+        todosInitializer = { initializeTodos }
+        tabSwitcher      = { switchTab}
         categories       = { categories }
         updateCategories = { updateCategories } />
 
@@ -197,7 +214,6 @@ const Main = () => {
   );
 }
 // ============================================= △ Main Component (main elm) △ === //
-
 
 
 // === ▽ style ▽ ================================================================= //
@@ -222,14 +238,9 @@ const StyledUl = styled.ul({
   marginTop: '.8rem',
 });
 
-// const StyledBtn = styled.button<{id?: string;}>`
-//   ${getBtnStyle}
-// `;
-
 const StyledTabNav = styled.nav`
   margin-top: 3.2rem;
   padding: 0 .8rem;
-
   display: flex;
 `;
 const Separater = styled.span`
@@ -240,7 +251,6 @@ const Separater = styled.span`
 `;
 
 const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
-
 
 const StyledTabUl = styled.ul`
   font-size: 2rem;
@@ -253,6 +263,7 @@ const StyledTabUl = styled.ul`
     display: none;
   }
 `;
+
 const StyledButton = styled.button<{$isActive: boolean}>`
   color: ${props => props.$isActive ? '#990' : '#777'};
   background-color: ${props => props.$isActive ? '#f9f9f9' : '#d9d9d9'};
