@@ -1,13 +1,13 @@
 /* react関連 */
 import React, { FC, useState, useRef, useEffect } from 'react';
+
 /* font awesome */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronUp, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+
 /* styled-components */
 import styled from 'styled-components';
 import { getBtnStyle } from './styleMain';
-import { todo } from 'node:test';
-
 
 
 // TodoTypes は global に定義
@@ -152,19 +152,19 @@ const Todo: FC<TodoProps> = (props) => {
           ref      = { inputRef                                        }
           onChange = { (e) => {setEditingTitle(e.currentTarget.value)} } />
 
-        <FontAwesomeIcon
-          className = "chevron"
-          onClick   = { () => setIsOpen(!isOpen) }
-          icon      = { faChevronUp              } />
 
-        <StyledDeleteBtn
-          onClick  = { () => { props.onDeleteClick(props.todo.id) } }
+        <OpenBtn
+          onClick   = { () => setIsOpen(!isOpen)   }
+          $isOpen   = { isOpen                     }
+          $isDetail = { Boolean(props.todo.detail) }
         >
-          <FontAwesomeIcon
-            className = "trash"
-            icon = { faTrashCan }
-          />
-        </StyledDeleteBtn>
+          <StyledFAI icon = { faChevronUp }/>
+        </OpenBtn>
+
+        <DeleteBtn onClick = { () => { props.onDeleteClick(props.todo.id) } } >
+          <StyledFAI icon = { faTrashCan }/>
+        </DeleteBtn>
+
       </div>
 
       <Detail
@@ -203,7 +203,7 @@ const StyledLi = styled.li<StyledLiProps>`
     line-height: 2.8rem;
     padding: 0 .4rem;
     flex: 1;
-    display: ${props => props.$inEditing ? 'block' : 'none'};
+    display: ${ props => props.$inEditing ? 'block' : 'none' };
     cursor: auto;
   }
 
@@ -245,7 +245,7 @@ const StyledLi = styled.li<StyledLiProps>`
     }
 
     label {
-      display: ${props => props.$inEditing ? 'none': 'block'};
+      display: ${ props => props.$inEditing ? 'none': 'block' };
       flex: 1;
       border: none;
       line-height: inherit;
@@ -260,29 +260,17 @@ const StyledLi = styled.li<StyledLiProps>`
       text-decoration: line-through;
     }
 
-    svg.chevron {
-      align-self: flex-start;
-      color: #444;
-      scale: ${props => props.$isOpen ? '1 1': '1 -1'};
-      display: ${props => props.$isDetail ? 'block': 'none'};
-      height: 1.6rem;
-      padding: .8rem .4rem;
-      font-size: .4rem;
-      transition: scale .5s;
-      margin-right: .8rem;
-      cursor: pointer;
-    }
   }
 
   .detail {
-    color: ${props => props.$isCompleted ? '#aaa': 'inherit'};
-    display: ${props => props.$inEditing ? 'none': 'block'};
-    max-height: ${props => props.$isOpen ? `${props.$contentHeight}` : '0'};
-    max-height: ${props => props.$inEditing && 'auto'};
+    color: ${ props => props.$isCompleted ? '#aaa': 'inherit' };
+    display: ${ props => props.$inEditing ? 'none': 'block' };
+    max-height: ${ props => props.$isOpen ? `${ props.$contentHeight }` : '0' };
+    max-height: ${ props => props.$inEditing && 'auto' };
     padding-right: 1.6rem;
     padding-bottom: 0;
     padding-left: calc(1.6rem + 1.6rem + .8rem);
-    padding-top: ${props => props.$isOpen ? '.8rem' : '0'}; 
+    padding-top: ${ props => props.$isOpen ? '.8rem' : '0' }; 
     overflow-y: hidden;
     /* background: pink; */
     transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
@@ -290,16 +278,32 @@ const StyledLi = styled.li<StyledLiProps>`
 
   textarea.in-editing {
     margin-top: .8rem;
-    min-height: ${props => `${props.$contentHeight}`};
+    min-height: ${ props => `${ props.$contentHeight }` };
     margin-left: calc(1.6rem + 1.6rem + .8rem);
     border-radius: 0; // iOSで丸くなるのを回避
   }
 `;
 
+// btns
+const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
+
+// open btn
+const OpenBtn = styled.button<{ $isOpen: boolean; $isDetail: boolean; }>`
+  svg {
+    align-self: flex-start;
+    color: #444;
+    scale: ${props => props.$isOpen ? '1 1': '1 -1'};
+    display: ${props => props.$isDetail ? 'block': 'none'};
+    height: 1.6rem;
+    padding: .8rem .4rem;
+    font-size: .4rem;
+    transition: scale .5s;
+    margin-right: .8rem;
+  }
+`;
+
 // delete btn
-const StyledDeleteBtn = styled.button`
-  ${getBtnStyle}
-  color: red;
+const DeleteBtn = styled.button`
   align-self: flex-start;
   border: none;
   svg.trash {
@@ -308,7 +312,5 @@ const StyledDeleteBtn = styled.button`
   }
 `;
 // ================================================================= △ style △ === //
-
-
 
 export default Todo;

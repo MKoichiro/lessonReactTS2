@@ -1,3 +1,5 @@
+/* categories の追加・削除・並び替えを設定するモーダル */
+
 /* react */
 import React, { FC, useState } from 'react';
 /* font awesome */
@@ -5,14 +7,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faEllipsisVertical, faTrashCan, faAngleUp, faAnglesUp, faAngleDown, faAnglesDown } from '@fortawesome/free-solid-svg-icons';
 /* styled-components */
 import styled from 'styled-components';
-import { Link } from 'react-scroll';
 
 /* from 関連の共通スタイルを定義してあるスタイル関数を import */
 import * as FormStyles from './commonStyleForm';
 import { getBtnStyle } from './styleMain';
 
-// === ▽ TabSettingModal Component  ▽ ============================================= //
-interface CategoryTypes { id: number; title: string; }
+// === ▽ TabSettingModal Component ▽ ============================================== //
+interface CategoryTypes {
+  id: number;
+  title: string;
+}
 interface modal {
   isOpen: boolean;
   closer: () => void;
@@ -24,7 +28,10 @@ const TabSettingModal: FC<modal> = (props) => {
 
   const [newTabTitle, setNewTabTitle] = useState('');
 
-  // sort関連ボタンのハンドラ
+  // フォームの入力に合わせて newTabTitle を更新
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => { setNewTabTitle(e.currentTarget.value); }
+
+  // --- sort 関連ボタンのハンドラ ------------------------------------------ //
   // idを振りなおす共通の処理
   const renumberCategories = (categories: CategoryTypes[]) => {
     const renumberedCategories = categories.map((category, i) => {
@@ -32,14 +39,15 @@ const TabSettingModal: FC<modal> = (props) => {
     });
     return renumberedCategories;
   };
-  // DeleteBtn: カテゴリーごとtodoリストを削除
+
+  // Delete Btn(ゴミ箱アイコン):              カテゴリーごとtodoリストを削除
   const handleDeleteBtnClick = (index: number) => {
     if (!confirm('本当に削除しますか？\n削除すると復元はできません。')) { return }
     const removedCategories = [...props.categories].filter((_, i) => i !== index);
     const renumberedCategories = renumberCategories(removedCategories);
     props.updateCategories(renumberedCategories);
   };
-  // ToTopBtn / ToBottomBtn: 1番上、または1番下に移動
+  // To Top Btn("<<") / To Bottom Btn(">>"):  1番上、または1番下に移動
   const handleToTopOrBottomBtnClick = (index: number, which: 't' | 'b') => {
     const rearrangedCategories = [...props.categories];
     const trimedCategory = rearrangedCategories.splice(index, 1);
@@ -48,7 +56,7 @@ const TabSettingModal: FC<modal> = (props) => {
     const renumberedCategories = renumberCategories(rearrangedCategories);
     props.updateCategories(renumberedCategories);
   };
-  // UpBtn / DownBtn: 1つ上、または1つ下に移動
+  // Up Btn("<") / Down Btn(">"):             1つ上、または1つ下に移動
   const handleUpOrDownBtnClick = (index: number, which: 'u' | 'd') => {
     const rearrangedCategories = [...props.categories];
     if      (which === 'u') { rearrangedCategories.splice(index - 1, 0, ...rearrangedCategories.splice(index, 1)) }
@@ -56,12 +64,10 @@ const TabSettingModal: FC<modal> = (props) => {
     const renumberedCategories = renumberCategories(rearrangedCategories);
     props.updateCategories(renumberedCategories);
   };
+  // ------------------------------------------ sort 関連ボタンのハンドラ --- //
 
-  // フォームの入力に合わせて newTabTitle を更新
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => { setNewTabTitle(e.currentTarget.value); }
-
-  // category の追加
-  const executeAdd = () => {
+  // --- add Btn のハンドラ ------------------------------------------------- //
+  const handleAddBtnClick = () => {
     // フォームをクリア
     setNewTabTitle('');
 
@@ -73,106 +79,105 @@ const TabSettingModal: FC<modal> = (props) => {
     const newCategory = {id: props.categories.length, title: newTabTitle}
     const newCategories = [...props.categories, newCategory];
     props.updateCategories(newCategories);
-
-    // local storage の tab_titles を更新
-    const TAB_TITLES_L_STRAGE_KEY = 'tab_titles';
-    localStorage.setItem(TAB_TITLES_L_STRAGE_KEY, JSON.stringify(newCategories));
   };
+  // ------------------------------------------------- add Btn のハンドラ --- //
 
-  const TabList = () => {
-    const tabNames = props.categories.map(category => {
-      return category.title
-    });
-    const TabItems = tabNames.map((tabName, i) => {
-      return (
-        <StyledLi key={i}>
-          <TabTitleContainer>
-            <GripBtn
-              icon = { faEllipsisVertical } />
-            <p children={ tabName }/>
-            <DeleteBtn
-              icon    = {faTrashCan}
-              onClick = { () => handleDeleteBtnClick(i) } />
-          </TabTitleContainer>
-          <SortBtnsContainer>
-            <ToTopBtn
-              icon    = { faAnglesUp }
-              onClick = { () => handleToTopOrBottomBtnClick(i, 't') } />
-            <ToBottomBtn
-              icon    = { faAnglesDown }
-              onClick = { () => handleToTopOrBottomBtnClick(i, 'b') }/>
-            <UpBtn
-              icon    = { faAngleUp }
-              onClick = { () => handleUpOrDownBtnClick(i, 'u') } />
-            <DownBtn
-              icon    = { faAngleDown }
-              onClick = { () => handleUpOrDownBtnClick(i, 'd') } />
-          </SortBtnsContainer>
-        </StyledLi>
-      );
-    });
+  // --- TabItems (TabListContainer に渡す JSX 配列) を用意 ----------------- //
+  const tabNames = props.categories.map(category => { return category.title });
+  const TabItems = tabNames.map((tabName, i) => {
     return (
-      <StyledTabUl>
-          { TabItems }
-      </StyledTabUl>
-    );
-  };
+      <StyledLi key={i}>
 
+        <TabTitleContainer>
+          <button>
+            <StyledFAI
+              icon = { faEllipsisVertical } />
+          </button>
+          <p children = { tabName } />
+          <DeleteBtn onClick = { () => handleDeleteBtnClick(i) } >
+            <StyledFAI icon = { faTrashCan } />
+          </DeleteBtn>
+        </TabTitleContainer>
+
+        <SortBtnsContainer className="sort-btns-container" >
+          {/* To Top Btn */}
+          <button onClick = { () => handleToTopOrBottomBtnClick(i, 't') } >
+            <StyledFAI icon = { faAnglesUp } />
+          </button>
+
+          {/* To Bottom Btn */}
+          <button onClick = { () => handleToTopOrBottomBtnClick(i, 'b') } >
+            <StyledFAI icon = { faAnglesDown } />
+          </button>
+
+          {/* Up Btn */}
+          <button onClick = { () => handleUpOrDownBtnClick(i, 'u') } >
+            <StyledFAI icon = { faAngleUp } />
+          </button>
+
+          {/* Down Btn */}
+          <button onClick = { () => handleUpOrDownBtnClick(i, 'd') } >
+            <StyledFAI icon = { faAngleDown } />
+          </button>
+        </SortBtnsContainer>
+
+      </StyledLi>
+    );
+  });
+  // ---------------------------------------------------- TabItems を用意 --- //
 
   return (
     <Mask
-      $isOpen={props.isOpen}
-      onClick={props.closer}
+      $isOpen = { props.isOpen }
+      onClick = { props.closer }
     >
-        <StyledDiv>
 
-<StyledH2> Tab Setting </StyledH2>
-<TabList />
+      <StyledDiv
+        onClick = { (e) => { e.stopPropagation() } } >
 
-<StyledForm onSubmit={(e) => { e.preventDefault() }}>
-  <StyledLegend
-    id="test"
-    children="CREATE NEW LIST" />
-  <StyledInputsWrapper>
-    <StyledInputWrapper
-      to="test"
-      smooth={true} >
-      <StyledLabel
-        $optional={false}
-        htmlFor="new-tab-title"
-      >
-        <span>{/* 必須 */}</span>Category Name:
-      </StyledLabel>
-      <StyledInput
-        id="new-tab-title"
-        type="text"
-        required
-        placeholder="例: 買い物用"
-        value={newTabTitle}
-        onChange={handleTitleChange}
-      />
-      {/* <StyledSmall
-      $showNotion={showNotion ? true : false}
-      children="※ タイトルは必須です。" /> */}
-    </StyledInputWrapper>
+        <h2 children = "Tab Setting" />
+        <TabListContainer children = { TabItems } />
 
-  </StyledInputsWrapper>
-  <StyledAddBtn
-    onClick={executeAdd}
-    type="button"
-    id="add-btn"
-  >
-    <div>
-      <div>
-        <FontAwesomeIcon icon={faPlus} />
-      </div>
-      <p>Add</p>
-    </div>
-  </StyledAddBtn>
-</StyledForm>
+        <StyledForm onSubmit = { (e) => { e.preventDefault() } }>
+          <StyledLegend children = "CREATE NEW LIST" />
 
-</StyledDiv>
+          <StyledInputsWrapper>
+            <StyledInputWrapper>
 
+              <StyledLabel
+                $optional = { false }
+                htmlFor = "new-tab-title"
+              >
+                <span></span>Category Name:
+              </StyledLabel>
+              <StyledInput
+                required
+                id = "new-tab-title"
+                type = "text"
+                placeholder = "例: 買い物用"
+                value = { newTabTitle }
+                onChange = { handleTitleChange } />
+              {/* <StyledSmall
+              $showNotion={showNotion ? true : false}
+              children="※ タイトルは必須です。" /> */}
+
+            </StyledInputWrapper>
+          </StyledInputsWrapper>
+          
+          <StyledAddBtn
+            onClick = { handleAddBtnClick }
+            type = "button"
+            id = "add-btn"
+          >
+            <div>
+              <div> <FontAwesomeIcon icon = { faPlus } /> </div>
+              <p>Add</p>
+            </div>
+          </StyledAddBtn>
+
+        </StyledForm>
+
+      </StyledDiv>
 
     </Mask>
   );
@@ -189,6 +194,7 @@ const Mask = styled.div<{ $isOpen: boolean }>`
   justify-content: center;
   align-items: center;
 `;
+
 const StyledDiv = styled.div`
   position: absolute;
   width: 50%;
@@ -201,11 +207,7 @@ const StyledDiv = styled.div`
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
 `;
 
-const StyledH2 = styled.h2`
-  /* color: red; */
-`;
-
-const StyledTabUl = styled.ul`
+const TabListContainer = styled.ul`
   font-size: 1.6rem;
   max-height: 50vh;
   overflow-y: scroll;
@@ -215,21 +217,27 @@ const StyledTabUl = styled.ul`
   
   /* リスト部分にスクロールの余地があることを示す影:
      スクロール位置が上端の時、上の影を隠す。(下端も同様) */
-  background: linear-gradient(to Bottom, #e9e9e9 30%, transparent),                /* 上の影の隠し */
+  background: linear-gradient(to Bottom, #e9e9e9 30%, transparent),         /* 上の影の隠し */
               linear-gradient(to Bottom, transparent, #e9e9e9 70%),         /* 下の影の隠し */
-              linear-gradient(to Bottom, rgba(0 0 0 / .15) 10%, transparent),        /* 上の影 */
+              linear-gradient(to Bottom, rgba(0 0 0 / .15) 10%, transparent), /* 上の影 */
               linear-gradient(to Bottom, transparent, rgba(0 0 0 / .15) 90%); /* 下の影 */
-
   background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
   background-position: 0 0, 0 100%, 0 0, 0 100%;
   background-repeat: no-repeat;
   background-attachment: local, local, scroll, scroll;
 `;
-const StyledLi = styled.li`
-  &:nth-child(even) { background: rgba(0 0 0 / .04) }
 
-  & + li { margin-top: 1.6rem; }
+const StyledLi = styled.li`
   line-height: 3.2rem;
+  padding: .8rem 0 1.6rem;
+
+  &:nth-child(even) {
+    background: rgba(0 0 0 / .04);
+    .sort-btns-container {
+      /* border-bottom: .15rem solid #990; */
+    }
+  }
+
   p {
     height: 3.2rem;
     font-size: 1.8rem;
@@ -242,78 +250,36 @@ const TabTitleContainer = styled.div`
   align-items: center;
 `;
 
-const GripBtn = styled(FontAwesomeIcon)`
-  ${ getBtnStyle }
-  height: 1.6rem;
-  padding: .8rem .4rem;
-  cursor: pointer;
-`;
+const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
-const DeleteBtn = styled(FontAwesomeIcon)`
-  ${ getBtnStyle }
-  margin-left: auto;
-  height: 1.6rem;
-  padding: .8rem .4rem;
-  cursor: pointer;
-`;
+const DeleteBtn = styled.button` margin-left: auto; `;
 
 const SortBtnsContainer = styled.div`
+  margin-left: auto;
+  margin-right: 1.6rem;
+  width: 30%;
   display: flex;
   height: 4rem;
   align-items: center;
-  justify-content: flex-end;
-  gap: 3.2rem;
+  justify-content: space-between;
+  border-radius: .6rem;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+
 `;
 
+const StyledForm = styled.form` ${ FormStyles.getFormStyle } `;
 
-const ToTopBtn = styled(FontAwesomeIcon)`
-  ${ getBtnStyle }
-  height: 1.6rem;
-  padding: .8rem .4rem;
-  cursor: pointer;
-`;
-const ToBottomBtn = styled(FontAwesomeIcon)`
-  ${ getBtnStyle }
-  height: 1.6rem;
-  padding: .8rem .4rem;
-  cursor: pointer;
-`;
-const UpBtn = styled(FontAwesomeIcon)`
-  ${ getBtnStyle }
-  height: 1.6rem;
-  padding: .8rem .4rem;
-  cursor: pointer;
-`;
-const DownBtn = styled(FontAwesomeIcon)`
-  ${ getBtnStyle }
-  height: 1.6rem;
-  padding: .8rem .4rem;
-  cursor: pointer;
-`;
+const StyledLegend = styled.legend` ${ FormStyles.getLegendStyle } `;
 
-const StyledForm = styled.form`
-  ${ FormStyles.getFormStyle }
-`;
-const StyledLegend = styled.legend`
-  ${ FormStyles.getLegendStyle }
-`;
-const StyledInputsWrapper = styled.div`
-  ${ FormStyles.getInputsWrapperStyle }
-`;
-const StyledInputWrapper = styled(Link)`
-  ${ FormStyles.getInputWrapperStyle }
-`;
-const StyledLabel = styled.label<{$optional?: boolean}>`
-  ${ FormStyles.getLabelStyle }
-`;
-const StyledInput = styled.input<{$as?: React.ElementType}>`
-  ${ FormStyles.getInputStyle }
-`;
-const StyledAddBtn = styled.button<{id?: string}>`
-  ${ FormStyles.getAddBtnStyle }
-`;
+const StyledInputsWrapper = styled.div` ${ FormStyles.getInputsWrapperStyle } `;
 
+const StyledInputWrapper = styled.div` ${ FormStyles.getInputWrapperStyle } `;
 
+const StyledLabel = styled.label<{ $optional?: boolean }>` ${ FormStyles.getLabelStyle } `;
+
+const StyledInput = styled.input<{ $as?: React.ElementType }>` ${ FormStyles.getInputStyle } `;
+
+const StyledAddBtn = styled.button<{ id?: string }>` ${ FormStyles.getAddBtnStyle } `;
 // ================================================================= △ style △ === //
 
 export default TabSettingModal;

@@ -135,7 +135,7 @@ const Main = () => {
       );
     });
 
-    return ( <StyledTabUl children={ TabItems } /> );
+    return ( <StyledTabUl children = { TabItems } /> );
   };
   // ------------------------------------------------------------------------- //
 
@@ -170,19 +170,17 @@ const Main = () => {
 
       <StyledH2>
         ToDo List
-        <StyledBtn onClick = { handlePurgeClick }>
-          <div>
-            <FontAwesomeIcon icon = { faArrowsRotate } />
-          </div>
-        </StyledBtn>
+        <button onClick = { handlePurgeClick } >
+          <StyledFAI icon = { faArrowsRotate } />
+        </button>
       </StyledH2>
 
       <StyledTabNav>
         <TabUl />
         <Separater/>
-        <StyledGearIcon
-          onClick  = { handleGearIconClick }
-          children = { <FontAwesomeIcon icon = { faGear } /> } />
+        <button>
+          <StyledFAI icon = { faGear } onClick  = { handleGearIconClick } />
+        </button>
       </StyledTabNav>
       <TodosList />
 
@@ -224,9 +222,9 @@ const StyledUl = styled.ul({
   marginTop: '.8rem',
 });
 
-const StyledBtn = styled.button<{id?: string;}>`
-  ${getBtnStyle}
-`;
+// const StyledBtn = styled.button<{id?: string;}>`
+//   ${getBtnStyle}
+// `;
 
 const StyledTabNav = styled.nav`
   margin-top: 3.2rem;
@@ -240,15 +238,8 @@ const Separater = styled.span`
   height: 3.6rem;
   margin: 0 1.6rem 0 3rem;
 `;
-const StyledGearIcon = styled.div`
-  height: 3.6rem;
-  display: flex;
-  align-items: center;
-  svg {
-    padding: .4rem;
-    height: 1.8rem;
-  }
-`;
+
+const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
 
 const StyledTabUl = styled.ul`
@@ -280,10 +271,6 @@ const StyledButton = styled.button<{$isActive: boolean}>`
     border-left: none;
   }
 `;
-
-
 // ================================================================= △ style △ === //
-
-
 
 export default Main;

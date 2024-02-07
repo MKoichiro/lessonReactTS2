@@ -77,14 +77,22 @@ const getInputStyle = (props: { as?: React.ElementType; }) => css`
 `;
 
 // add btn
-const getAddBtnStyle = (props: { id?: string; }) => css`
-  ${ getBtnStyle(props) }
-  border: var(--border-weight) solid #444;
-  transition: width .5s ease-out;
+const getAddBtnStyle = () => css`
+  /* btn 共通スタイルの読み込みとプロパティの上書き */
+  ${ getBtnStyle }
+  height: 3.2rem;
+  padding: 0;
+  font-family: var(--eng-ff-2);
 
+  /* 以下追加プロパティ */
   --margin: .3rem;
   --net-btn-size: calc(3.2rem - .3rem);
   --net-inner-btn-size: calc(var(--net-btn-size) - var(--margin) * 2);
+
+  margin-left: auto;
+  border: var(--border-weight) solid #444;
+  transition: width .5s ease-out;
+
   & > div {
     margin: var(--margin);
     width: auto;
