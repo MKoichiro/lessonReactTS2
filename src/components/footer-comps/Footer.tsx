@@ -21,7 +21,7 @@ const StyledFooter = styled.footer`
   h3 {
     height: inherit;
     line-height: 5rem;
-    text-align: center
+    text-align: center;
   }
 `;
 
