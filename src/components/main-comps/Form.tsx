@@ -107,7 +107,7 @@ const StyledForm = styled.form`
   ${ FormStyles.getFormStyle }
   margin: 3.2rem 0;
   padding: 3.2rem .8rem 0;
-  border-top: .15rem dashed #3e3e3e;
+  border-top: var(--border-weight) dashed #3e3e3e;
 `;
 
 const StyledLegend = styled.legend`

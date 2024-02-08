@@ -78,20 +78,27 @@ const getInputStyle = (props: { as?: React.ElementType; }) => css`
 
 // add btn
 const getAddBtnStyle = () => css`
-  /* btn 共通スタイルの読み込みとプロパティの上書き */
-  ${ getBtnStyle }
+  --width: 3.2rem;
   height: 3.2rem;
+  width: var(--width);
   padding: 0;
   font-family: var(--eng-ff-2);
 
+
   /* 以下追加プロパティ */
   --margin: .3rem;
-  --net-btn-size: calc(3.2rem - .3rem);
+  --net-btn-size: calc(var(--width) - var(--margin));
   --net-inner-btn-size: calc(var(--net-btn-size) - var(--margin) * 2);
 
   margin-left: auto;
   border: var(--border-weight) solid #444;
   transition: width .5s ease-out;
+
+  @media (width < 600px) {
+    height: 2.8rem;
+    --width: 2.8rem;
+    --margin: .15rem;
+  }
 
   & > div {
     margin: var(--margin);
@@ -126,7 +133,9 @@ const getAddBtnStyle = () => css`
     }
   }
 
-  &:hover { width: calc(3.2rem + 6rem); }
+  &:hover {
+    width: calc(var(--width) + 6rem);
+  }
   &:hover > div {
     p { transform: translateX(0); }
   }

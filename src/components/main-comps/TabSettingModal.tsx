@@ -216,6 +216,13 @@ const StyledDiv = styled.div`
   flex-direction: column;
   gap: 3.2rem;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  @media (width < 1024px) {
+    color: red;
+    width: 75%;
+  }
+  @media (width < 600px) {
+    width: 85%;
+  }
 `;
 
 const TabListContainer = styled.ul`
@@ -275,10 +282,13 @@ const SortBtnsContainer = styled.div`
   display: flex;
   height: 4rem;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   border-radius: .6rem;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
-
+  @media (width < 600px) {
+    width: 50%;
+    height: 2.8rem;
+  }
 `;
 
 const StyledForm = styled.form`

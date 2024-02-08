@@ -8,6 +8,9 @@ const GlobalStyle = createGlobalStyle`
     --eng-ff-2: 'Times NewRoman', 'Times', Arial, 'Helvetica Neue', Helvetica, sans-serif;
     --eng-ff-3: 'Economica'              , Arial, 'Helvetica Neue', Helvetica, sans-serif;
     --border-weight: .15rem;
+    @media (width < 600px) {
+      --border-weight: .1rem;
+    }
 
   }
 

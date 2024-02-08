@@ -226,12 +226,12 @@ const StyledMain = styled.main({
   },
 });
 
-const StyledH2 = styled.h2({
-  display: 'flex',
-  justifyContent: 'space-between',
-  borderBottom: '.15rem solid #3e3e3e',
-  padding: '0 .8rem .8rem',
-});
+const StyledH2 = styled.h2`
+  display: flex;
+  justify-content: space-between;
+  border-bottom: var(--border-weight) solid #3e3e3e;
+  padding: 0 .8rem .8rem;
+`;
 
 // ul
 const StyledUl = styled.ul({
@@ -239,21 +239,27 @@ const StyledUl = styled.ul({
 });
 
 const StyledTabNav = styled.nav`
+  --nav-height: 3.6rem;
   margin-top: 3.2rem;
   padding: 0 .8rem;
   display: flex;
+  @media (width < 600px) {
+    --nav-height: 2.4rem;
+  }
 `;
 const Separater = styled.span`
   width: .3rem;
   background: #990;
-  height: 3.6rem;
+  height: var(--nav-height);
   margin: 0 1.6rem 0 3rem;
+  @media (width < 600px) {
+    width: .15rem;
+  }
 `;
 
 const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
 const StyledTabUl = styled.ul`
-  font-size: 2rem;
   display: flex;
   flex: 1;
   overflow-x: scroll;
@@ -264,22 +270,28 @@ const StyledTabUl = styled.ul`
   }
 `;
 
-const StyledButton = styled.button<{$isActive: boolean}>`
-  color: ${props => props.$isActive ? '#990' : '#777'};
-  background-color: ${props => props.$isActive ? '#f9f9f9' : '#d9d9d9'};
-  height: 3.6rem;
-  line-height: calc(3.6rem - (.4rem + .15rem) * 2);
+const StyledButton = styled.button<{ $isActive: boolean }>`
+  color: ${ props => props.$isActive ? '#990' : '#777' };
+  background-color: ${ props => props.$isActive ? '#f9f9f9' : '#d9d9d9' };
+  height: var(--nav-height);
+  line-height: calc(var(--nav-height) - (.4rem + var(--border-weight)) * 2);
   display: block;
   max-width: 15%;
   min-width: 15%;
-  border: .15rem solid #444;
+  border: var(--border-weight) solid #444;
   padding: .4rem .8rem;
-  font-size: inherit;
+
   overflow-x: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   & + button {
     border-left: none;
+  }
+
+  font-size: 2rem;
+  @media (width < 600px) {
+    padding: .4rem;
+
   }
 `;
 // ================================================================= △ style △ === //

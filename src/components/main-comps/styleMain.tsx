@@ -11,6 +11,10 @@ const getBtnStyle = () => css`
 
   height: 1.6rem;
   padding: .8rem .4rem;
+  @media (width < 600px) {
+    width: 1rem;
+    padding: .4rem .4rem;
+  }
 `;
 
 

@@ -19,6 +19,7 @@ module.exports = {
         ]
     },
     devServer: {
+        host: '0.0.0.0',                                  // 開発中に同じネットワークの別端末からも閲覧可能に
         static: {
           directory: `${__dirname}/dist`,
         },

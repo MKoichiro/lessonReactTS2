@@ -143,6 +143,7 @@ const Todo: FC<TodoProps> = (props) => {
           checked  = { props.todo.isCompleted                       }
           onChange = { () => { props.onChangeClick(props.todo.id) } } />
         <label
+          onDoubleClick={(e) => {e.preventDefault()}}
           onClick  = { handleSingleDoubleClick }
           children = { props.todo.title        } />
         <input
@@ -197,14 +198,20 @@ const StyledLi = styled.li<StyledLiProps>`
   display: flex;
   flex-direction: column;
 
+  --line-height: 2.8rem;
+  @media (width < 600px) {
+    --line-height: 2rem;
+  }
+
   .in-editing {
     border: none;
     background: #fff;
-    line-height: 2.8rem;
+    line-height: var(--line-height);
     padding: 0 .4rem;
     flex: 1;
     display: ${ props => props.$inEditing ? 'block' : 'none' };
     cursor: auto;
+    border-radius: 0; // iOSで丸くなるのを回避
   }
 
   .in-editing:focus {
@@ -219,8 +226,6 @@ const StyledLi = styled.li<StyledLiProps>`
   .heading {
     display: flex;
     align-items: center;
-    font-size: 1.8rem;
-    line-height: 3.2rem;
 
     input[type="checkbox"] {
       position: relative;
@@ -232,6 +237,10 @@ const StyledLi = styled.li<StyledLiProps>`
       width: 1.6rem;
       height: 1.6rem;
       appearance: none;
+      @media (width < 600px) {
+        width: 1.2rem;
+        height: 1.2rem;
+      }
     }
 
     input:checked::before {
@@ -248,9 +257,7 @@ const StyledLi = styled.li<StyledLiProps>`
       display: ${ props => props.$inEditing ? 'none': 'block' };
       flex: 1;
       border: none;
-      line-height: inherit;
       cursor: ${ props => props.$isDetail ? 'pointer' : 'auto' };
-      font-size: inherit;
       font-weight: bold;
     }
 
@@ -280,7 +287,6 @@ const StyledLi = styled.li<StyledLiProps>`
     margin-top: .8rem;
     min-height: ${ props => `${ props.$contentHeight }` };
     margin-left: calc(1.6rem + 1.6rem + .8rem);
-    border-radius: 0; // iOSで丸くなるのを回避
   }
 `;
 
