@@ -71,7 +71,8 @@ const Main = () => {
   // --- Todo Component に渡すハンドラ --------------------------------------- //
   // 1. delete button: click
   const handleTodoDeleteClick = (id: number) => {
-    if (!confirm('Are you sure to delet this item?')) { return }
+    const deletingTodo = todos.filter(todo => {return todo.id === id})[0];
+    if (!confirm(`以下のタスクを完全に削除します。\n\n ・${ deletingTodo.title }`)) { return }
     
     const newTodos = [...todos].filter((todo) => { return todo.id !== id });
     updateTodos(newTodos);
@@ -118,7 +119,7 @@ const Main = () => {
     const newTodos = todos.filter((todo) => { return !todo.isCompleted });
     const hasCompletedTodo = !(todos.length === newTodos.length);
     if (!hasCompletedTodo) { return }
-    if (!confirm('[!] 完了済みのタスクをすべて削除しますか？')) { return }
+    if (!confirm('[ ! ] 完了済みのタスクをすべて削除します。')) { return }
     updateTodos(newTodos);
   };
   // ------------------------------------------------------------------------- //
@@ -141,12 +142,13 @@ const Main = () => {
     const tabNames = categories.map(category => {return category.title});
     const TabItems = tabNames.map((tabName, i) => {
       return (
-        <StyledButton
-          key       = { i }
-          $isActive = { activeIndex === i }
-          onClick   = { handleTabClick(i) }
-          children  = { tabName }
-        />
+        <StyledTabLi key = { i } $isActive = { activeIndex === i } >
+          <StyledBtn
+            $isActive = { activeIndex === i }
+            onClick   = { handleTabClick(i) }
+            children  = { tabName } />
+          { ( i !== categories.length - 1) && <SeparaterBetweenTabs /> } {/* 最後はいらない */}
+        </StyledTabLi>
       );
     });
 
@@ -159,12 +161,11 @@ const Main = () => {
   const todoListItems = todos.map((todo) => {
     return (
       <Todo
-        key           = { todo.id }
-        todo          = { todo    }
+        key           = { todo.id                  }
+        todo          = { todo                     }
         onDeleteClick = { handleTodoDeleteClick    }
         onChangeClick = { handleTodoCheckBoxChange }
-        renewTodo     = { handleTodoEdited         }
-      />
+        renewTodo     = { handleTodoEdited         } />
     );
   });
 
@@ -200,7 +201,6 @@ const Main = () => {
       <TodosList />
 
       <Form 
-        key = {10}
         onAddSubmit = { handleAddFormSubmit } />
       <TabSettingModal
         isOpen           = { tabSettingModalIsOpen }
@@ -218,13 +218,13 @@ const Main = () => {
 
 // === ▽ style ▽ ================================================================= //
 // main elm
-const StyledMain = styled.main({
-  width: '60%',
-  margin: '0 auto',
-  '@media (max-width: 1024px)': {
-    width: '90%',
-  },
-});
+const StyledMain = styled.main`
+  width: 60%;
+  margin: 3.2rem auto 0;
+  @media (width < 1024px) {
+    width: 90%;
+  }
+`;
 
 const StyledH2 = styled.h2`
   display: flex;
@@ -232,11 +232,6 @@ const StyledH2 = styled.h2`
   border-bottom: var(--border-weight) solid #3e3e3e;
   padding: 0 .8rem .8rem;
 `;
-
-// ul
-const StyledUl = styled.ul({
-  marginTop: '.8rem',
-});
 
 const StyledTabNav = styled.nav`
   --nav-height: 3.6rem;
@@ -247,17 +242,6 @@ const StyledTabNav = styled.nav`
     --nav-height: 2.4rem;
   }
 `;
-const Separater = styled.span`
-  width: .3rem;
-  background: #990;
-  height: var(--nav-height);
-  margin: 0 1.6rem 0 3rem;
-  @media (width < 600px) {
-    width: .15rem;
-  }
-`;
-
-const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
 const StyledTabUl = styled.ul`
   display: flex;
@@ -270,29 +254,63 @@ const StyledTabUl = styled.ul`
   }
 `;
 
-const StyledButton = styled.button<{ $isActive: boolean }>`
-  color: ${ props => props.$isActive ? '#990' : '#777' };
-  background-color: ${ props => props.$isActive ? '#f9f9f9' : '#d9d9d9' };
+const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
+
+const StyledTabLi = styled.li<{ $isActive: boolean }>`
+  display: flex;
   height: var(--nav-height);
   line-height: calc(var(--nav-height) - (.4rem + var(--border-weight)) * 2);
+
+  --max-width: ${ props => props.$isActive ? 'auto' : '20%' };
+  --min-width: 20%;
+  @media (width < 600px) {
+    --max-width: ${ props => props.$isActive ? 'auto' : '25%' };
+    --min-width: 25%;
+  }
+  max-width: var(--max-width);
+  min-width: var(--min-width);
+`;
+
+const StyledBtn = styled.button<{ $isActive: boolean }>`
   display: block;
-  max-width: 15%;
-  min-width: 15%;
-  border: var(--border-weight) solid #444;
+  width: 100%;
   padding: .4rem .8rem;
+  font-size: 1.6rem;
+  font-weight: normal;
+  font-family: var(--eng-ff-1);
+  letter-spacing: .1rem;
+  color: ${ props => props.$isActive ? '#fff' : '#444' };
+  background-color: ${ props => props.$isActive ? '#454e70' : '#ddd' };
 
   overflow-x: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  & + button {
-    border-left: none;
-  }
 
-  font-size: 2rem;
+  transition: transform 100ms;
+  &:active { transform: scale(.95); }
+`;
+
+const SeparaterBetweenTabs = styled.span`
+  min-width: calc(var(--border-weight) * 1.5);
+  background: #fff;
+  height: 75%;
+  align-self: center;
+  margin: 0 .8rem;
+`;
+
+const Separater = styled.span`
+  width: .3rem;
+  background: #bb0;
+  height: var(--nav-height);
+  margin: 0 1.6rem 0 3.2rem;
   @media (width < 600px) {
-    padding: .4rem;
-
+    width: .15rem;
   }
+`;
+
+// ul
+const StyledUl = styled.ul`
+  margin-top: 3.2rem;
 `;
 // ================================================================= △ style △ === //
 

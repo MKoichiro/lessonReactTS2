@@ -11,17 +11,29 @@ const Footer = () => {
 }
 
 const StyledFooter = styled.footer`
+  display: flex;
   margin-top: auto;
-  height: 5rem;
+  height: 15vh;
   width: 100%;
   color: #777;
-  border-top: .15rem solid #999;
-  background: #e9e9e9;
+  background: #fcfcfc;
+  clip-path: polygon(
+    0 5vw, 100% 0, 100% 100%, 0 100%
+  );
+  @media (width < 600px) {
+    height: 10vh;
+  }
 
   h3 {
-    height: inherit;
+    padding: 0 .8rem;
+    align-self: flex-end;
+    margin: 0 auto 0;
+    width: 60%;
     line-height: 5rem;
-    text-align: center;
+    text-align: right;
+    @media (width < 1024px) {
+      width: 90%;
+    }
   }
 `;
 

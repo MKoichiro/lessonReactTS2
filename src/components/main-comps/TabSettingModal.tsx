@@ -54,10 +54,17 @@ const TabSettingModal: FC<modal> = (props) => {
   };
   // To Top Btn("<<") / To Bottom Btn(">>"):  1番上、または1番下に移動
   const handleToTopOrBottomBtnClick = (index: number, which: 't' | 'b') => {
+    const categoryTitle = props.categories[index].title;
     const rearrangedCategories = [...props.categories];
     const trimedCategory = rearrangedCategories.splice(index, 1);
-    if      (which === 't') { rearrangedCategories.unshift(...trimedCategory) }
-    else if (which === 'b') { rearrangedCategories.push(...trimedCategory)    }
+    if      (which === 't') {
+      rearrangedCategories.unshift(...trimedCategory);
+      props.tabSwitcher(0, categoryTitle);
+    }
+    else if (which === 'b') {
+      rearrangedCategories.push(...trimedCategory);
+      props.tabSwitcher(props.categories.length - 1, categoryTitle);
+    }
     const renumberedCategories = renumberCategories(rearrangedCategories);
     props.updateCategories(renumberedCategories);
   };
@@ -103,7 +110,7 @@ const TabSettingModal: FC<modal> = (props) => {
           </button>
           <p children = { tabName } />
           <DeleteBtn
-            isLastOne = { props.categories.length === 1 }
+            $isLastOne = { props.categories.length === 1 }
             onClick = { () => handleDeleteBtnClick(i) } >
             <StyledFAI icon = { faTrashCan } />
           </DeleteBtn>
@@ -198,8 +205,10 @@ const TabSettingModal: FC<modal> = (props) => {
 // === ▽ style ▽ ================================================================= //
 const Mask = styled.div<{ $isOpen: boolean }>`
   position: fixed;
+  z-index: 1;
   inset: 0; 
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: ${ props => props.$isOpen ? 'flex': 'none' };
   justify-content: center;
   align-items: center;
@@ -208,6 +217,7 @@ const Mask = styled.div<{ $isOpen: boolean }>`
 
 const StyledDiv = styled.div`
   position: absolute;
+  z-index: 2;
   width: 50%;
   padding: 1.6rem;
   background: #e9e9e9;
@@ -217,7 +227,6 @@ const StyledDiv = styled.div`
   gap: 3.2rem;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
   @media (width < 1024px) {
-    color: red;
     width: 75%;
   }
   @media (width < 600px) {
@@ -246,6 +255,7 @@ const TabListContainer = styled.ul`
 `;
 
 const StyledLi = styled.li`
+  font-family: var(--eng-ff-1);
   line-height: 3.2rem;
   padding: .8rem 0 1.6rem;
 
@@ -270,8 +280,8 @@ const TabTitleContainer = styled.div`
 
 const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
-const DeleteBtn = styled.button<{ isLastOne: boolean }>`
-  display: ${ props => props.isLastOne ? 'none' : 'block' };
+const DeleteBtn = styled.button<{ $isLastOne: boolean }>`
+  display: ${ props => props.$isLastOne ? 'none' : 'block' };
   margin-left: auto;
 `;
 
@@ -299,7 +309,7 @@ const StyledForm = styled.form`
 const StyledLegend = styled.legend`
   ${ FormStyles.getLegendStyle }
   padding-top: 3.2rem;
-  border-top: .15rem dashed #444;
+  border-top: var(--border-weight) dashed #444;
 `;
 
 const StyledInputsWrapper = styled.div` ${ FormStyles.getInputsWrapperStyle } `;
