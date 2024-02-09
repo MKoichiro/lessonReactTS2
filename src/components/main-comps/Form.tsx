@@ -22,6 +22,7 @@ const Form: FC<FormProps> = (props) => {
   const [detail, setDetail] = useState('');
   const [showNotion, setShowNotion] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.currentTarget.value);
@@ -38,15 +39,25 @@ const Form: FC<FormProps> = (props) => {
     setDetail('');
     if (inputRef.current) { inputRef.current.focus() }
 
-    // スペースのみの入力場合は何もせずに抜ける
+    // 入力がスペースのみや空欄の場合は入力エラーを表示するだけで抜ける
     const titleTrimed: string = title.replaceAll(/ |　/g, '');
     if (!titleTrimed) { setShowNotion(true); return }
 
     const detailTrimed: string | null = detail.replaceAll(/ |　/g, '');
     if (!detailTrimed) { props.onAddSubmit(title)         }
     else               { props.onAddSubmit(title, detail) }
-
   };
+
+  const handleInputBlur = (target: 'input' | 'textarea') => {
+    // input から focus が外れたとき、textarea にも focus が当たっていなければ
+    if (target === 'input') {
+      setTimeout (() => { (document.activeElement !== textareaRef.current) && setShowNotion(false); }, 0);
+    }
+    // textarea から focus が外れたとき、input にも focus が当たっていなければ
+    else if (target === 'textarea') {
+      setTimeout (() => { (document.activeElement !== inputRef.current) && setShowNotion(false); }, 0);
+    }
+  }
 
 
   // Form DOM を return
@@ -66,9 +77,10 @@ const Form: FC<FormProps> = (props) => {
             value    = {             title }
             onChange = { handleTitleChange }
             ref      = {          inputRef }
+            onBlur   = {() => {handleInputBlur('input')}}
           />
           <StyledSmall
-            $showNotion={showNotion ? true : false}
+            $showNotion={ showNotion }
             children="※ タイトルは必須です。" />
         </StyledInputWrapper>
 
@@ -82,6 +94,8 @@ const Form: FC<FormProps> = (props) => {
             placeholder="例: 牛乳、ニンジン、ジャガイモ、カレールー"
             value    = { detail             }
             onChange = { handleDetailChange }
+            ref      = {textareaRef}
+            onBlur   = {() => {handleInputBlur('textarea')}}
           />
         </StyledInputWrapper>
       </StyledInputsWrapper>

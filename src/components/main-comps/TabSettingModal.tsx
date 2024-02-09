@@ -1,10 +1,10 @@
 /* categories の追加・削除・並び替えを設定するモーダル */
 
 /* react */
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useRef } from 'react';
 /* font awesome */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faEllipsisVertical, faTrashCan, faAngleUp, faAnglesUp, faAngleDown, faAnglesDown } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisVertical, faTrashCan, faAngleUp, faAnglesUp, faAngleDown, faAnglesDown, faRectangleXmark } from '@fortawesome/free-solid-svg-icons';
 /* styled-components */
 import styled from 'styled-components';
 
@@ -30,9 +30,15 @@ interface modal {
 const TabSettingModal: FC<modal> = (props) => {
 
   const [newTabTitle, setNewTabTitle] = useState('');
+  const [showNotion, setShowNotion]   = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  // --- input のハンドラ --------------------------------------------------- //
   // フォームの入力に合わせて newTabTitle を更新
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => { setNewTabTitle(e.currentTarget.value); }
+  // フォーカスが外れたら入力エラーを非表示に
+  const handleInputBlur = () => { setShowNotion(false); }
+  // --------------------------------------------------- input のハンドラ --- //
 
   // --- sort 関連ボタンのハンドラ ------------------------------------------ //
   // idを振りなおす共通の処理
@@ -83,6 +89,12 @@ const TabSettingModal: FC<modal> = (props) => {
     // フォームをクリア
     setNewTabTitle('');
 
+    if (inputRef.current) { inputRef.current.focus() }
+
+    // 入力がスペースのみや空欄の場合は入力エラーを表示するだけで抜ける
+    const titleTrimed: string = newTabTitle.replaceAll(/ |　/g, '');
+    if (!titleTrimed) { setShowNotion(true); return }
+
     // 新しい newTabTitle を key として、todos を格納するための空の配列を新規登録登録
     const TODO_L_STRAGE_KEY = newTabTitle;
     props.todosInitializer(TODO_L_STRAGE_KEY);
@@ -109,11 +121,6 @@ const TabSettingModal: FC<modal> = (props) => {
               icon = { faEllipsisVertical } />
           </button>
           <p children = { tabName } />
-          <DeleteBtn
-            $isLastOne = { props.categories.length === 1 }
-            onClick = { () => handleDeleteBtnClick(i) } >
-            <StyledFAI icon = { faTrashCan } />
-          </DeleteBtn>
         </TabTitleContainer>
 
         <SortBtnsContainer className="sort-btns-container" >
@@ -136,6 +143,20 @@ const TabSettingModal: FC<modal> = (props) => {
           <button onClick = { () => handleUpOrDownBtnClick(i, 'd') } >
             <StyledFAI icon = { faAngleDown } />
           </button>
+
+          {props.categories.length !== 1 && (
+            <>
+              <Separater />
+
+              <DeleteBtn
+                $isLastOne={props.categories.length === 1}
+                onClick={() => handleDeleteBtnClick(i)} >
+                <StyledFAI icon={faTrashCan} />
+              </DeleteBtn>
+            </>
+          )}
+
+
         </SortBtnsContainer>
 
       </StyledLi>
@@ -152,7 +173,13 @@ const TabSettingModal: FC<modal> = (props) => {
       <StyledDiv
         onClick = { (e) => { e.stopPropagation() } } >
 
-        <h2 children = "Category Setting" />
+        <StyledH2>
+          Category Setting
+          <button onClick = { props.modalCloser } >
+            <StyledFAI icon = { faRectangleXmark } />
+          </button>
+        </StyledH2>
+
         <TabListContainer children = { TabItems } />
 
         <StyledForm onSubmit = { (e) => { e.preventDefault() } }>
@@ -169,22 +196,24 @@ const TabSettingModal: FC<modal> = (props) => {
               </StyledLabel>
               <StyledInput
                 required
-                id = "new-tab-title"
-                type = "text"
+                id          = "new-tab-title"
+                type        = "text"
                 placeholder = "例: 買い物用"
-                value = { newTabTitle }
-                onChange = { handleTitleChange } />
-              {/* <StyledSmall
-              $showNotion={showNotion ? true : false}
-              children="※ タイトルは必須です。" /> */}
+                value       = { newTabTitle }
+                ref         = { inputRef }
+                onBlur      = { handleInputBlur }
+                onChange    = { handleTitleChange } />
+              <StyledSmall
+                $showNotion = { showNotion }
+                children    =  "※ タイトルは必須です。" />
 
             </StyledInputWrapper>
           </StyledInputsWrapper>
           
           <StyledAddBtn
             onClick = { handleAddBtnClick }
-            type = "button"
-            id = "add-btn"
+            type    = "button"
+            id      = "add-btn"
           >
             <div>
               <div> <FontAwesomeIcon icon = { faPlus } /> </div>
@@ -206,7 +235,8 @@ const TabSettingModal: FC<modal> = (props) => {
 const Mask = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   z-index: 1;
-  inset: 0; 
+  inset: 0;
+  height: 100lvh;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: ${ props => props.$isOpen ? 'flex': 'none' };
@@ -234,6 +264,11 @@ const StyledDiv = styled.div`
   }
 `;
 
+const StyledH2 = styled.h2`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const TabListContainer = styled.ul`
   font-size: 1.6rem;
   max-height: 50vh;
@@ -255,9 +290,10 @@ const TabListContainer = styled.ul`
 `;
 
 const StyledLi = styled.li`
+  display: flex;
+  align-items: center;
   font-family: var(--eng-ff-1);
-  line-height: 3.2rem;
-  padding: .8rem 0 1.6rem;
+  padding: .8rem 0;
 
   &:nth-child(odd) {
     background: rgba(0 0 0 / .04);
@@ -267,38 +303,52 @@ const StyledLi = styled.li`
   }
 
   p {
-    height: 3.2rem;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
+    line-height: 2.4rem;
     font-weight: bold;
+  }
+  @media (width < 600px) {
+    flex-wrap: wrap;
   }
 `;
 
 const TabTitleContainer = styled.div`
   display: flex;
   align-items: center;
+  @media (width < 600px) {
+    width: 100%;
+  }
 `;
 
 const StyledFAI = styled(FontAwesomeIcon)` ${ getBtnStyle } `;
 
-const DeleteBtn = styled.button<{ $isLastOne: boolean }>`
-  display: ${ props => props.$isLastOne ? 'none' : 'block' };
-  margin-left: auto;
-`;
-
 const SortBtnsContainer = styled.div`
   margin-left: auto;
   margin-right: 1.6rem;
-  width: 30%;
+  min-width: 30%;
   display: flex;
-  height: 4rem;
+  height: 3.2rem;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   border-radius: .6rem;
-  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
   @media (width < 600px) {
-    width: 50%;
-    height: 2.8rem;
+    min-width: 50%;
+    height: 2.4rem;
   }
+`;
+
+const Separater = styled.span`
+  width: calc(var(--border-weight) * 1.5);
+  background-color: #bb0;
+  height: 2.4rem;
+  margin: 0 .4rem;
+  @media (width < 600px) {
+    height: 2rem;
+  }
+`;
+
+const DeleteBtn = styled.button<{ $isLastOne: boolean }>`
+  display: ${ props => props.$isLastOne ? 'none' : 'block' };
 `;
 
 const StyledForm = styled.form`
@@ -319,6 +369,8 @@ const StyledInputWrapper = styled.div` ${ FormStyles.getInputWrapperStyle } `;
 const StyledLabel = styled.label<{ $optional?: boolean }>` ${ FormStyles.getLabelStyle } `;
 
 const StyledInput = styled.input<{ $as?: React.ElementType }>` ${ FormStyles.getInputStyle } `;
+
+const StyledSmall = styled.small<{$showNotion: boolean}>` ${ FormStyles.getSmallStyle } `;
 
 const StyledAddBtn = styled.button<{ id?: string }>` ${ FormStyles.getAddBtnStyle } `;
 // ================================================================= △ style △ === //
