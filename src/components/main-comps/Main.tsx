@@ -21,26 +21,34 @@ const Main = () => {
 
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const CATEGORIES_L_STRAGE_KEY = 'tab_titles';
-  const INITAIL_CATEGORY_TITLE = 'Template 1';
+  const TEMPLATE_CATEGORY_TITLE = 'Template 1'
+  const TEMPLATE_CATEGORY_KEY   = '0_Template 1';
+  const ID_ADMIN                = 'id_admin';
+
+  // 新規ブラウザまたは新規デバイスからアクセスされたとき
+  if (!localStorage.getItem(ID_ADMIN)) { localStorage.setItem(ID_ADMIN, JSON.stringify(1)); }
 
   // categories の初期化
   const storageDataTabTitleString: string | null = localStorage.getItem('tab_titles');
   let storageDataTabTitle: CategoryTypes[];
   if (storageDataTabTitleString) {
     storageDataTabTitle = JSON.parse(storageDataTabTitleString);
-  } else {
-    storageDataTabTitle = [{id: 0, title: INITAIL_CATEGORY_TITLE}];
-    localStorage.setItem(CATEGORIES_L_STRAGE_KEY, JSON.stringify(storageDataTabTitle));
+  }
+  else { // 新規ブラウザまたは新規デバイスからアクセスされたとき
+    storageDataTabTitle = [{id: 0, title: TEMPLATE_CATEGORY_TITLE}];
+    localStorage.setItem(TEMPLATE_CATEGORY_KEY, JSON.stringify(storageDataTabTitle));
     console.error("local storage に 'tab_titles' のデータがありません。");
   }
   const [categories, setCategories] = useState<CategoryTypes[]>(storageDataTabTitle);
 
   // categories の更新関数
   const updateCategories = (newCategories: CategoryTypes[]) => {
+
     setCategories(newCategories);
     localStorage.setItem(CATEGORIES_L_STRAGE_KEY, JSON.stringify(newCategories));
   };
 
+  // 0番目の category で todos の初期化
   const initializeTodos = (storageKey: string): TodoTypes[] => {
     const templateTodos = [
       {
@@ -53,18 +61,16 @@ const Main = () => {
     localStorage.setItem(storageKey, JSON.stringify(templateTodos));
     return templateTodos;
   };
-
-  // todos の初期化
   const storageData = localStorage.getItem(storageDataTabTitle[0].title);
   let initialTodos: TodoTypes[];
-  if (storageData === null) { initialTodos = initializeTodos(INITAIL_CATEGORY_TITLE); }
+  if (storageData === null) { initialTodos = initializeTodos(TEMPLATE_CATEGORY_KEY); }
   else                      { initialTodos = JSON.parse(storageData);                 }
   const [todos, setTodos] = useState<TodoTypes[]>(initialTodos);
 
   // todos の更新関数
   const updateTodos = (newTodos: TodoTypes[]) => {
     setTodos(newTodos);
-    const TODO_L_STRAGE_KEY = categories[activeIndex].title;
+    const TODO_L_STRAGE_KEY = `${categories[activeIndex].id}_${categories[activeIndex].title}`;
     localStorage.setItem(TODO_L_STRAGE_KEY, JSON.stringify(newTodos));
   };
 
@@ -126,18 +132,24 @@ const Main = () => {
 
   // --- TabUl Component  ---------------------------------------------------- //
   // tab 切り替えの処理は tabSettingModal Component でも使用するので関数化
-  const switchTab = (newActiveIndex: number, storageKey: string) => {
-    setActiveIndex(newActiveIndex);
+  const switchTab = (newActiveIndex: number, targetKey?: string) => {
+    let storageKey: string;
+    if (targetKey) {
+      storageKey = targetKey;
+    } else {
+      storageKey = `${categories[newActiveIndex].id}_${categories[newActiveIndex].title}`;
+    }
     const storageData = localStorage.getItem(storageKey);
     let savedTodos;
     if (storageData === null) { console.error('local storage に category title と一致するデータが見つかりません。') }
     else                      { savedTodos = JSON.parse(storageData) }
+    setActiveIndex(newActiveIndex);
     setTodos(savedTodos);
   };
 
   const TabUl = () => {
 
-    const handleTabClick = (i: number) => (e: MouseEvent) => { switchTab(i, storageDataTabTitle[i].title); };
+    const handleTabClick = (i: number) => (e: MouseEvent) => { switchTab(i); };
 
     const tabNames = categories.map(category => {return category.title});
     const TabItems = tabNames.map((tabName, i) => {
@@ -206,7 +218,7 @@ const Main = () => {
         isOpen           = { tabSettingModalIsOpen }
         modalCloser      = { closeModal }
         todosInitializer = { initializeTodos }
-        tabSwitcher      = { switchTab}
+        tabSwitcher      = { switchTab }
         categories       = { categories }
         updateCategories = { updateCategories } />
 

@@ -22,7 +22,7 @@ interface modal {
   isOpen: boolean;
   modalCloser: () => void;
   todosInitializer: (storageKey: string) => TodoTypes[];
-  tabSwitcher: (newActiveIndex: number, storageKey: string) => void;
+  tabSwitcher: (newActiveIndex: number, targetKey?: string) => void;
   categories: CategoryTypes[];
   updateCategories: (newCategories: CategoryTypes[]) => void;
 }
@@ -41,46 +41,43 @@ const TabSettingModal: FC<modal> = (props) => {
   // --------------------------------------------------- input のハンドラ --- //
 
   // --- sort 関連ボタンのハンドラ ------------------------------------------ //
-  // idを振りなおす共通の処理
-  const renumberCategories = (categories: CategoryTypes[]) => {
-    const renumberedCategories = categories.map((category, i) => {
-      return { ...category, id: i }
-    });
-    return renumberedCategories;
-  };
-
   // Delete Btn(ゴミ箱アイコン):              カテゴリーごとtodoリストを削除
   const handleDeleteBtnClick = (index: number) => {
     const TODO_L_STRAGE_KEY = props.categories[index].title;
     if (!confirm('本当に削除しますか？\n削除すると復元はできません。')) { return }
-    const removedCategories = [...props.categories].filter((_, i) => i !== index);
-    const renumberedCategories = renumberCategories(removedCategories);
-    props.updateCategories(renumberedCategories);
+    const removedCategories = [...props.categories];
+    removedCategories.splice(index, 1);
+    props.updateCategories(removedCategories);
     localStorage.removeItem(TODO_L_STRAGE_KEY);
   };
   // To Top Btn("<<") / To Bottom Btn(">>"):  1番上、または1番下に移動
   const handleToTopOrBottomBtnClick = (index: number, which: 't' | 'b') => {
-    const categoryTitle = props.categories[index].title;
+    const storageKey = `${props.categories[index].id}_${props.categories[index].title}`;
     const rearrangedCategories = [...props.categories];
     const trimedCategory = rearrangedCategories.splice(index, 1);
     if      (which === 't') {
       rearrangedCategories.unshift(...trimedCategory);
-      props.tabSwitcher(0, categoryTitle);
+      props.tabSwitcher(0, storageKey);
     }
     else if (which === 'b') {
       rearrangedCategories.push(...trimedCategory);
-      props.tabSwitcher(props.categories.length - 1, categoryTitle);
+      props.tabSwitcher(props.categories.length - 1, storageKey);
     }
-    const renumberedCategories = renumberCategories(rearrangedCategories);
-    props.updateCategories(renumberedCategories);
+    props.updateCategories(rearrangedCategories);
   };
   // Up Btn("<") / Down Btn(">"):             1つ上、または1つ下に移動
   const handleUpOrDownBtnClick = (index: number, which: 'u' | 'd') => {
+    const storageKey = `${props.categories[index].id}_${props.categories[index].title}`;
     const rearrangedCategories = [...props.categories];
-    if      (which === 'u') { rearrangedCategories.splice(index - 1, 0, ...rearrangedCategories.splice(index, 1)) }
-    else if (which === 'd') { rearrangedCategories.splice(index + 1, 0, ...rearrangedCategories.splice(index, 1)) }
-    const renumberedCategories = renumberCategories(rearrangedCategories);
-    props.updateCategories(renumberedCategories);
+    if      (which === 'u') {
+      rearrangedCategories.splice(index - 1, 0, ...rearrangedCategories.splice(index, 1));
+      props.tabSwitcher(index - 1, storageKey);
+    }
+    else if (which === 'd') {
+      rearrangedCategories.splice(index + 1, 0, ...rearrangedCategories.splice(index, 1));
+      props.tabSwitcher(index + 1, storageKey);
+    }
+    props.updateCategories(rearrangedCategories);
   };
   // ------------------------------------------ sort 関連ボタンのハンドラ --- //
 
@@ -95,17 +92,33 @@ const TabSettingModal: FC<modal> = (props) => {
     const titleTrimed: string = newTabTitle.replaceAll(/ |　/g, '');
     if (!titleTrimed) { setShowNotion(true); return }
 
+    const ID_ADMIN = 'id_admin';
+    const storageIdAdmin = localStorage.getItem(ID_ADMIN);
+    let newId;
+    if (!storageIdAdmin) {
+      const errorMessage = 'local storage に "id_admin" に一致するデータが無いため、 id の割り振りに失敗しました。新規カテゴリーを追加できません。';
+      console.error(errorMessage);
+      if (!confirm(`${errorMessage}\n id をリセットして実行しますか？`)) { return }
+        const renumberedCategories = props.categories.map((category, i) => { return { ...category, id: i } });
+        props.updateCategories(renumberedCategories);
+        newId = props.categories.length;
+    } else {
+      newId = Number(JSON.parse(storageIdAdmin));
+    }
+    // 通し番号を更新しておく。
+    localStorage.setItem(ID_ADMIN, JSON.stringify(newId + 1));
+
     // 新しい newTabTitle を key として、todos を格納するための空の配列を新規登録登録
-    const TODO_L_STRAGE_KEY = newTabTitle;
+    const TODO_L_STRAGE_KEY = `${newId}_${newTabTitle}`;
     props.todosInitializer(TODO_L_STRAGE_KEY);
 
     // categories 配列を newTabTitle を含めたものに更新
-    const newCategory = {id: props.categories.length, title: newTabTitle}
+    const newCategory = {id: newId, title: newTabTitle}
     const newCategories = [...props.categories, newCategory];
     props.updateCategories(newCategories);
 
     // 新規作成した category のタブに切り替え
-    props.tabSwitcher(props.categories.length, newTabTitle);
+    props.tabSwitcher(props.categories.length, TODO_L_STRAGE_KEY);
   };
   // ------------------------------------------------- add Btn のハンドラ --- //
 
