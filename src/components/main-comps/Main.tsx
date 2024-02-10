@@ -1,5 +1,5 @@
 /* react */
-import React, { useState, MouseEvent, useEffect } from 'react';
+import React, { useState, MouseEvent, useEffect, useRef } from 'react';
 /* font awesome */
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowsRotate, faGear } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +10,7 @@ import { getBtnStyle } from './styleMain';
 import Form from './Form';
 import Todo from './Todo';
 import TabSettingModal from './TabSettingModal'
+
 
 
 // TodoTypes は global に定義
@@ -40,6 +41,7 @@ const Main = () => {
     console.error("local storage に 'tab_titles' のデータがありません。");
   }
   const [categories, setCategories] = useState<CategoryTypes[]>(storageDataTabTitle);
+
 
   // categories の更新関数
   const updateCategories = (newCategories: CategoryTypes[]) => {
@@ -148,23 +150,44 @@ const Main = () => {
   };
 
   const TabUl = () => {
+    const containerRef = useRef<HTMLUListElement>(null);
 
-    const handleTabClick = (i: number) => (e: MouseEvent) => { switchTab(i); };
+    // const handleUlScroll = (e: MouseEvent) => {
+    //   const targetElm = e.currentTarget;
+    //   const container = containerRef.current;
+    //   const targetRect = targetElm.getBoundingClientRect();
+    //   if (!container) { console.error('tab ul が見つかりません。'); return; }
+    //   const containerRect = container.getBoundingClientRect();
+    //   const scrollLeft = targetRect.left - containerRect.left;
+    //   console.log(scrollLeft);
 
+    //   setTimeout(() => {
+    //     // container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    //     targetElm.scrollIntoView({block: 'start', behavior: 'smooth'});
+    //     console.log('excuted');
+
+    //   }, 1000);
+    // };
+    const handleTabClick = (i: number) => (e: MouseEvent) => { switchTab(i); /* handleUlScroll(e) */};
     const tabNames = categories.map(category => {return category.title});
+
     const TabItems = tabNames.map((tabName, i) => {
+
+      const [isActive, setIsActive] = useState(false);
+      useEffect(() => { setTimeout(() => { setIsActive(activeIndex === i); }, 0) }, [activeIndex]);
+
       return (
-        <StyledTabLi key = { i } $isActive = { activeIndex === i } >
-          <StyledBtn
-            $isActive = { activeIndex === i }
-            onClick   = { handleTabClick(i) }
-            children  = { tabName } />
+        <StyledTabLi key = { i } $isActive = { isActive } >
+            <StyledBtn
+              $isActive = { isActive }
+              onClick   = { handleTabClick(i) }
+              children  = { tabName } />
           { ( i !== categories.length - 1) && <SeparaterBetweenTabs /> } {/* 最後はいらない */}
         </StyledTabLi>
       );
     });
 
-    return ( <StyledTabUl children = { TabItems } /> );
+    return ( <StyledTabUl children = { TabItems } ref = { containerRef } /> );
   };
   // ------------------------------------------------------------------------- //
 
@@ -273,26 +296,24 @@ const StyledTabLi = styled.li<{ $isActive: boolean }>`
   height: var(--nav-height);
   line-height: calc(var(--nav-height) - (.4rem + var(--border-weight)) * 2);
 
-  --max-width: ${ props => props.$isActive ? 'auto' : '20%' };
-  --min-width: 20%;
-  @media (width < 600px) {
-    --max-width: ${ props => props.$isActive ? 'auto' : '25%' };
-    --min-width: 25%;
-  }
-  max-width: var(--max-width);
-  min-width: var(--min-width);
+  width: 15rem;
+  transition: flex 750ms, width 750ms;
+  flex: ${props => props.$isActive ? '0 0 50rem' : '0 0 15rem'};
 `;
 
 const StyledBtn = styled.button<{ $isActive: boolean }>`
   display: block;
   width: 100%;
   padding: .4rem .8rem;
+
   font-size: 1.6rem;
   font-weight: normal;
   font-family: var(--eng-ff-1);
   letter-spacing: .1rem;
+
   color: ${ props => props.$isActive ? '#fff' : '#444' };
   background-color: ${ props => props.$isActive ? '#454e70' : '#ddd' };
+
 
   overflow-x: hidden;
   text-overflow: ellipsis;
